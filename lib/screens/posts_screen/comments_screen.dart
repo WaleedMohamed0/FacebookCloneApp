@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
 import 'package:social_app/components/constants.dart';
-import 'package:social_app/cubits/posts_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/models/comment_model.dart';
 
 import 'package:social_app/my_flutter_app_icons.dart';
+import 'package:social_app/screens/posts_screen/users_who_reacted_screen.dart';
 
-import '../../cubits/posts_cubit/states.dart';
+import '../../cubits/posts_cubit/posts_states.dart';
+import '../profile_screen/profile_screen.dart';
 
 class CommentsScreen extends StatelessWidget {
   String postId = "";
@@ -49,26 +53,36 @@ class CommentsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            title: Row(
-              children: [
-                defaultText(
-                    textColor: Colors.black,
-                    text: postsCubit.usersLikedPost[0].name!),
-                if (postsCubit.usersLikedPost.length > 1 &&
-                    postsCubit.usersLikedPost.length != 2)
-                  defaultText(
-                      text:
-                          ' and ${postsCubit.usersLikedPost.length - 1} others'),
-                if(postsCubit.usersLikedPost.length == 2)
-                  defaultText(
-                      text:
-                      ' and ${postsCubit.usersLikedPost.length - 1} other'),
-                SizedBox(
-                  width: Adaptive.w(1.5),
-                ),
-                Icon(Icons.arrow_forward_ios)
-              ],
-            ),
+            title: postsCubit.usersLiked.isNotEmpty
+                ? InkWell(
+                    onTap: () {
+                      navigateToWithAnimation(
+                          context: context,
+                          nextScreen: UsersWhoReactedScreen(),
+                          pageTransitionType: PageTransitionType.rightToLeft);
+                    },
+                    child: Row(
+                      children: [
+                        defaultText(
+                            textColor: Colors.black,
+                            text: postsCubit.usersLiked[0].name!),
+                        if (postsCubit.usersLiked.length > 1 &&
+                            postsCubit.usersLiked.length != 2)
+                          defaultText(
+                              text:
+                                  ' and ${postsCubit.usersLiked.length - 1} others'),
+                        if (postsCubit.usersLiked.length == 2)
+                          defaultText(
+                              text:
+                                  ' and ${postsCubit.usersLiked.length - 1} other'),
+                        SizedBox(
+                          width: Adaptive.w(1.5),
+                        ),
+                        Icon(Icons.arrow_forward_ios)
+                      ],
+                    ),
+                  )
+                : Container(),
           ),
           body: Column(
             children: [
@@ -79,55 +93,11 @@ class CommentsScreen extends StatelessWidget {
                     padding: EdgeInsets.symmetric(
                         horizontal: Adaptive.w(4), vertical: Adaptive.h(3)),
                     itemBuilder: (context, index) {
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(
-                              // check if profilePhoto is updated so it can be updated in comments asWell
-                              postsCubit.comments[index].uId == loggedUserID
-                                  ? userCubit.userLogged!.profilePhoto!
-                                  : postsCubit.comments[index].profilePhoto,
-                            ),
-                            radius: 25,
-                          ),
-                          SizedBox(
-                            width: Adaptive.w(3),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.grey[200],
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: Adaptive.w(3),
-                                vertical: Adaptive.h(.9)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                defaultText(
-                                    // check if name is updated so it can be updated in comments asWell
-                                    text: postsCubit.comments[index].uId ==
-                                            loggedUserID
-                                        ? userCubit.userLogged!.name!
-                                        : postsCubit.comments[index].name,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18),
-                                SizedBox(
-                                  height: Adaptive.h(1),
-                                ),
-                                SizedBox(
-                                  width: Adaptive.w(67),
-                                  child: defaultText(
-                                    text:
-                                        postsCubit.comments[index].commentText,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
+                      return buildComment(
+                          commentData: postsCubit.comments[index],
+                          userCubit: userCubit,
+                          index: index,
+                          context: context);
                     },
                     separatorBuilder: (context, index) => SizedBox(
                           height: Adaptive.h(3),
@@ -181,6 +151,75 @@ class CommentsScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget buildComment(
+      {required CommentModel commentData,
+      required UserCubit userCubit,
+      required int index,
+      required context}) {
+    RegExp exp = RegExp("[a-zA-Z]");
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () {
+            PostsCubit.get(context).getOtherUsersPosts(uId: commentData.uId);
+            navigateToWithAnimation(
+                context: context,
+                nextScreen: ProfileScreen(userModel: commentData),
+                pageTransitionType: PageTransitionType.rightToLeft);
+          },
+          child: CircleAvatar(
+            backgroundImage: NetworkImage(
+              commentData.profilePhoto,
+            ),
+            radius: 25,
+          ),
+        ),
+        SizedBox(
+          width: Adaptive.w(3),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.grey[200],
+          ),
+          padding: EdgeInsets.symmetric(
+              horizontal: Adaptive.w(3), vertical: Adaptive.h(.9)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: () {
+                  PostsCubit.get(context)
+                      .getOtherUsersPosts(uId: commentData.uId);
+                  navigateToWithAnimation(
+                      context: context,
+                      nextScreen: ProfileScreen(userModel: commentData),
+                      pageTransitionType: PageTransitionType.rightToLeft);
+                },
+                child: defaultText(
+                    text: commentData.name,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18),
+              ),
+              SizedBox(
+                height: Adaptive.h(1),
+              ),
+              SizedBox(
+                width: Adaptive.w(70),
+                child: defaultText(
+                    text: commentData.commentText,
+                    textAlign: exp.hasMatch(commentData.commentText)
+                        ? TextAlign.start
+                        : TextAlign.end),
+              )
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

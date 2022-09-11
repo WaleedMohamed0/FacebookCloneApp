@@ -3,32 +3,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/constants.dart';
-import 'package:social_app/cubits/posts_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/states.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/screens/profile_screen/profile_screen.dart';
 
 import '../../components/components.dart';
+import '../../models/user_data.dart';
 
 class EditProfileScreen extends StatelessWidget {
-  const EditProfileScreen({Key? key}) : super(key: key);
+  dynamic userModel;
+
+  EditProfileScreen({this.userModel});
 
   @override
   Widget build(BuildContext context) {
     var cubit = UserCubit.get(context);
-    var userModel = UserCubit.get(context).userLogged;
-    var nameController = TextEditingController(text: userModel!.name),
-        passwordController = TextEditingController(text: userModel.password),
-        phoneController = TextEditingController(text: userModel.phone),
-        ageController = TextEditingController(text: userModel.age),
-        educationController = TextEditingController(text: userModel.education),
-        residenceController = TextEditingController(text: userModel.residence);
+    var currentUser = UserCubit.get(context).userLogged;
+    var nameController = TextEditingController(text: currentUser!.name),
+        passwordController = TextEditingController(text: currentUser.password),
+        phoneController = TextEditingController(text: currentUser.phone),
+        ageController = TextEditingController(text: currentUser.age),
+        educationController = TextEditingController(text: currentUser.education),
+        residenceController = TextEditingController(text: currentUser.residence);
     return BlocConsumer<UserCubit, UserStates>(
       listener: (context, state) {
-        if (state is UpdateUserSuccessState) {
+        if (state is GetUsersDataSuccessState) {
           defaultToast(msg: 'User Updated Successfully');
           PostsCubit.get(context).updatePostsData(userCubit: cubit);
-          navigateAndFinish(context, const ProfileScreen());
+          Navigator.pop(context);
         } else if (state is UpdateUserErrorState) {
           defaultToast(
             msg: "Error In Updating Profile",
@@ -65,7 +68,13 @@ class EditProfileScreen extends StatelessWidget {
         ];
 
         return Scaffold(
-            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.white,
+            appBar:(userModel != null &&  userModel.uId == loggedUserID)
+                ? defaultAppBar(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    toolbarHeight: Adaptive.h(4))
+                : null,
             body: SingleChildScrollView(
               child: Column(
                 children: [
@@ -95,19 +104,22 @@ class EditProfileScreen extends StatelessWidget {
                                     ),
                                     image: DecorationImage(
                                       image: cubit.coverImagePath == null
-                                          ? NetworkImage(userModel.coverPhoto!)
+                                          ? NetworkImage(currentUser.coverPhoto!)
                                           : FileImage(cubit.coverImagePath!)
                                               as ImageProvider,
                                       fit: BoxFit.cover,
                                     )),
                               ),
-                              CircleAvatar(
-                                  child: defaultIconButton(
-                                      icon: Icons.camera_alt_outlined,
-                                      color: Colors.white,
-                                      onPressed: () {
-                                        cubit.changeCoverPhoto();
-                                      }))
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CircleAvatar(
+                                    child: defaultIconButton(
+                                        icon: Icons.camera_alt_outlined,
+                                        color: Colors.white,
+                                        onPressed: () {
+                                          cubit.changeCoverPhoto();
+                                        })),
+                              )
                             ],
                           ),
                         ),
@@ -121,7 +133,7 @@ class EditProfileScreen extends StatelessWidget {
                                     backgroundImage:
                                         cubit.profileImagePath == null
                                             ? NetworkImage(
-                                                userModel.profilePhoto!,
+                                                currentUser.profilePhoto!,
                                               )
                                             : FileImage(cubit.profileImagePath!)
                                                 as ImageProvider)),
@@ -152,7 +164,7 @@ class EditProfileScreen extends StatelessWidget {
                     ),
                   ListView.separated(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return Padding(
                           padding:
@@ -178,31 +190,51 @@ class EditProfileScreen extends StatelessWidget {
                   SizedBox(
                     height: Adaptive.h(3),
                   ),
-                  defaultBtn(
-                      txt: 'Save',
-                      function: () {
-                        if (cubit.profileImagePath != null ||
-                            cubit.coverImagePath != null) {
-                          cubit.uploadUserImages(
-                            name: nameController.text,
-                            password: passwordController.text,
-                            phone: phoneController.text,
-                            age: ageController.text,
-                            education: educationController.text,
-                            residence: residenceController.text,
-                          );
-                        } else {
-                          cubit.updateUser(
-                            name: nameController.text,
-                            password: passwordController.text,
-                            phone: phoneController.text,
-                            age: ageController.text,
-                            education: educationController.text,
-                            residence: residenceController.text,
-                          );
-                        }
-                      },
-                      borderRadius: 10),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: defaultBtn(
+                                txt: "Back",
+                                function: () {
+                                  Navigator.pop(context);
+                                },
+                                backgroundColor: Colors.transparent,
+                                textColor: defaultColor)),
+                        SizedBox(
+                          width: Adaptive.w(3),
+                        ),
+                        Expanded(
+                          child: defaultBtn(
+                              txt: 'Save',
+                              function: () {
+                                if (cubit.profileImagePath != null ||
+                                    cubit.coverImagePath != null) {
+                                  cubit.uploadUserImages(
+                                    name: nameController.text,
+                                    password: passwordController.text,
+                                    phone: phoneController.text,
+                                    age: ageController.text,
+                                    education: educationController.text,
+                                    residence: residenceController.text,
+                                  );
+                                } else {
+                                  cubit.updateUser(
+                                    name: nameController.text,
+                                    password: passwordController.text,
+                                    phone: phoneController.text,
+                                    age: ageController.text,
+                                    education: educationController.text,
+                                    residence: residenceController.text,
+                                  );
+                                }
+                              },
+                              borderRadius: 10),
+                        ),
+                      ],
+                    ),
+                  ),
                   SizedBox(
                     height: Adaptive.h(3),
                   ),

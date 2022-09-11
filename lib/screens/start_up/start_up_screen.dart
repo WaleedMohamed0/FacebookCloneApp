@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/states.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/screens/chats/messenger_screen.dart';
 
 import '../../components/components.dart';

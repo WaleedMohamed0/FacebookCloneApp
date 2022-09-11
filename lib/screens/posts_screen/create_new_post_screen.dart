@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
-import 'package:social_app/cubits/posts_cubit/cubit.dart';
-import 'package:social_app/cubits/posts_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/states.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/my_flutter_app_icons.dart';
 
-import '../../cubits/posts_cubit/states.dart';
+import '../../cubits/posts_cubit/posts_states.dart';
 import 'home_screen.dart';
 
 class CreateNewPost extends StatelessWidget {
@@ -19,15 +20,15 @@ class CreateNewPost extends StatelessWidget {
     var postTextController = TextEditingController();
     var postsCubit = PostsCubit.get(context);
     var userCubit = UserCubit.get(context);
+
     return BlocConsumer<PostsCubit, PostsStates>(
       listener: (context, state) {
         if (state is CreateNewPostSuccessState) {
           defaultToast(msg: "Post Added Successfully");
-          // postsCubit.updatePosts();
-          // postsCubit.getAllPosts().then((value) {
-          //   navigateAndFinish(context, HomeScreen());
-          //   postsCubit.removePostImage();
-          // });
+
+          postsCubit.getAllPosts().then((value) {
+            Navigator.pop(context);
+          });
         } else if (state is CreateNewPostErrorState) {
           defaultToast(
               msg: "Error In Uploading Your Post", backgroundColor: Colors.red);
@@ -45,18 +46,19 @@ class CreateNewPost extends StatelessWidget {
               elevation: 0,
               actions: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal:Adaptive.w(2.8) ,vertical: Adaptive.h(1.3)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: Adaptive.w(2.8), vertical: Adaptive.h(1.3)),
                   child: defaultBtn(
                       txt: "POST",
                       function: () {
                         if (postsCubit.postImagePath != null) {
                           postsCubit.uploadPostImage(
                               text: postTextController.text,
-                              userCubit: userCubit);
+                              currentUser: userCubit.userLogged!);
                         } else {
                           postsCubit.createNewPost(
                               text: postTextController.text,
-                              userCubit: userCubit);
+                              currentUser: userCubit.userLogged!);
                         }
                       },
                       width: 80,
@@ -64,20 +66,18 @@ class CreateNewPost extends StatelessWidget {
                       fontSize: 15,
                       borderWidth: 0),
                 )
-              ]
-              ),
+              ]),
           body: CustomScrollView(
             slivers: [
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: Adaptive.w(4)),
+                  padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        height: Adaptive.h(3),
+                        height: Adaptive.h(2),
                       ),
                       if (state is CreateNewPostLoadingState ||
                           state is UploadPostImageLoadingState)
@@ -94,7 +94,7 @@ class CreateNewPost extends StatelessWidget {
                       if (state is CreateNewPostLoadingState ||
                           state is UploadPostImageLoadingState)
                         SizedBox(
-                          height: Adaptive.h(1),
+                          height: Adaptive.h(1.6),
                         ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,

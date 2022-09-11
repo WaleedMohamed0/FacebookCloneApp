@@ -1,16 +1,17 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:social_app/cubits/posts_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/user_data.dart';
 import 'package:social_app/my_flutter_app_icons.dart';
 import 'package:social_app/screens/posts_screen/comments_screen.dart';
 
 import '../models/post_model.dart';
+import '../screens/profile_screen/profile_screen.dart';
 import 'constants.dart';
 
 void navigateTo({required context, required nextScreen}) => Navigator.push(
@@ -137,12 +138,14 @@ Widget defaultText(
         TextAlign? textAlign,
         FontWeight? fontWeight,
         String? fontFamily,
-        TextStyle? myStyle}) =>
+        TextStyle? myStyle,
+        TextDirection? textDirection}) =>
     Text(
       isUpperCase ? text.toUpperCase() : text,
       maxLines: linesMax,
       overflow: textOverflow,
       textAlign: textAlign,
+      // textDirection:TextDirection.LTR,
       style: myStyle ??
           TextStyle(
               fontFamily: fontFamily,
@@ -234,19 +237,13 @@ Widget defaultBtnWithIcon({
   );
 }
 
-Future myDialog(
-        {context,
+Future defaultDialog(
+        {required context,
         required text,
-        declineText,
-        acceptText,
-        Widget? content,
-        String? labelTxt1,
-        String? labelTxt2,
-        TextEditingController? controller1,
-        TextEditingController? controller2,
-        bool changeName = false,
-        void Function()? declineFn,
-        void Function()? acceptFn}) =>
+        required declineText,
+        required acceptText,
+        required void Function()? declineFn,
+        required void Function()? acceptFn}) =>
     showDialog(
         context: context,
         builder: (context) {
@@ -255,27 +252,6 @@ Future myDialog(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   defaultText(text: text, fontSize: 18),
-                  SizedBox(
-                    height: Adaptive.h(3),
-                  ),
-                  Column(
-                    children: [
-                      defaultTextField(
-                        textInput: TextInputType.text,
-                        controller: controller1,
-                        hintText: labelTxt1,
-                      ),
-                      SizedBox(
-                        height: Adaptive.h(2),
-                      ),
-                      changeName
-                          ? defaultTextField(
-                              textInput: TextInputType.text,
-                              controller: controller2,
-                              hintText: labelTxt2)
-                          : Container(),
-                    ],
-                  ),
                 ],
               ),
               content: Row(
@@ -285,15 +261,17 @@ Future myDialog(
                     child: TextButton(
                         onPressed: declineFn,
                         child: defaultText(
-                            text: declineText, textColor: Colors.white)),
-                    width: Adaptive.w(20),
+                            text: declineText,
+                            textColor: Colors.white,
+                            fontSize: 14.5)),
+                    width: Adaptive.w(27),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color: defaultColor,
                     ),
                   ),
                   Container(
-                    width: Adaptive.w(20),
+                    width: Adaptive.w(27),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color: defaultColor,
@@ -301,7 +279,9 @@ Future myDialog(
                     child: TextButton(
                         onPressed: acceptFn,
                         child: defaultText(
-                            text: acceptText, textColor: Colors.white)),
+                            text: acceptText,
+                            textColor: Colors.white,
+                            fontSize: 14.5)),
                   ),
                 ],
               ));
@@ -329,16 +309,23 @@ AppBar defaultAppBar(
         {String title = "",
         FontWeight? fontWeight = FontWeight.w600,
         Color textColor = Colors.white,
+        Widget? leading,
         double? fontSize,
+        double? toolbarHeight,
         List<Widget>? actions,
         Color foregroundColor = Colors.black,
         double? elevation,
-        Color? backgroundColor}) =>
+        Color? backgroundColor,
+        PreferredSizeWidget? preferredSizeWidget}) =>
     AppBar(
       foregroundColor: foregroundColor,
+      leadingWidth: 30,
       backgroundColor: backgroundColor,
+      toolbarHeight: toolbarHeight,
       actions: actions,
       elevation: elevation,
+      leading: leading,
+      bottom: preferredSizeWidget,
       title: defaultText(
           text: title,
           fontWeight: fontWeight,
@@ -355,152 +342,233 @@ Future<bool?> defaultToast(
       msg: msg, textColor: textColor, backgroundColor: backgroundColor);
 }
 
-Widget buildPost(PostModel post, PostsCubit postsCubit, index, context,
+Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
     UserModel currentUser) {
-  return Card(
-    elevation: 10,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: Adaptive.w(2), vertical: Adaptive.h(2)),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(
-                  post.profilePhoto,
+  RegExp exp = RegExp("[a-zA-Z]");
+  return Padding(
+    padding: EdgeInsets.only(bottom: Adaptive.h(1.5)),
+    child: Card(
+      elevation: 10,
+      child: Column(
+        crossAxisAlignment: exp.hasMatch(post.text)
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.end,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: Adaptive.w(2), vertical: Adaptive.h(3)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () {
+                    postsCubit.getOtherUsersPosts(uId: post.uId);
+                    navigateToWithAnimation(
+                        context: context,
+                        nextScreen: ProfileScreen(userModel: post),
+                        pageTransitionType: PageTransitionType.rightToLeft);
+                  },
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      post.profilePhoto,
+                    ),
+                    radius: 25,
+                  ),
                 ),
-                radius: 25,
+                SizedBox(
+                  width: Adaptive.w(3),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            postsCubit.getOtherUsersPosts(uId: post.uId);
+                            navigateToWithAnimation(
+                                context: context,
+                                nextScreen: ProfileScreen(userModel: post),
+                                pageTransitionType:
+                                    PageTransitionType.rightToLeft);
+                          },
+                          child: defaultText(
+                              text: post.name,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17),
+                        ),
+                        SizedBox(
+                          width: Adaptive.w(1),
+                        ),
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.blue,
+                          size: 20,
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: Adaptive.h(.4),
+                    ),
+                    defaultText(text: post.dateTime, textColor: Colors.grey),
+                  ],
+                ),
+                Spacer(),
+                if (post.uId == loggedUserID)
+                  CircleAvatar(
+                    radius: 15,
+                    backgroundColor: Colors.grey[200],
+                    child: defaultIconButton(
+                      icon: Icons.close,
+                      onPressed: () {
+                        defaultDialog(
+                            text: 'Are you sure to remove this post ?',
+                            context: context,
+                            declineText: 'Back',
+                            acceptText: 'Remove',
+                            acceptFn: () {
+                              postsCubit.removePost(
+                                  postId: postsCubit.postsId[postIndex],
+                                  postIndex: postIndex);
+                              Navigator.of(context, rootNavigator: true)
+                                  .pop(context);
+                            },
+                            declineFn: () {
+                              Navigator.of(context, rootNavigator: true)
+                                  .pop(context);
+                            });
+                      },
+                      color: Colors.black,
+                    ),
+                  )
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4)),
+                child: defaultText(
+                  text: post.text,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
               ),
-              SizedBox(
-                width: Adaptive.w(3),
+            ],
+          ),
+          SizedBox(
+            height: Adaptive.h(2),
+          ),
+          if (post.postImage != "")
+            Center(
+              child: Image.network(
+                post.postImage,
+                fit: BoxFit.cover,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            ),
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: Adaptive.w(5), vertical: Adaptive.h(2)),
+            child: Row(
+              children: [
+                Icon(myIcons.like),
+                SizedBox(
+                  width: Adaptive.w(2),
+                ),
+                defaultText(text: '${postsCubit.likes[postIndex]}'),
+                SizedBox(
+                  width: Adaptive.w(5.5),
+                ),
+                // Spacer(),
+                // defaultText(text: '2 shares')
+              ],
+            ),
+          ),
+          Divider(
+            color: Colors.grey[600],
+            height: 2,
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: Adaptive.w(5.5), vertical: Adaptive.h(1.3)),
+            child: Row(
+              children: [
+                Flexible(
+                  child: InkWell(
+                    onTap: () {
+                      postsCubit.likePost(
+                          postId: postsCubit.postsId[postIndex],
+                          index: postIndex,
+                          currentUser: currentUser);
+                    },
+                    child: Row(
+                      children: [
+                        Icon(myIcons.like),
+                        SizedBox(
+                          width: Adaptive.w(2.3),
+                        ),
+                        defaultText(text: 'Like'),
+                      ],
+                    ),
+                  ),
+                ),
+                Flexible(
+                    child: InkWell(
+                  onTap: () {
+                    postsCubit.getComments(
+                        postId: postsCubit.postsId[postIndex]);
+                    postsCubit.getLikedUsers(
+                        postId: postsCubit.postsId[postIndex],
+                        context: context,
+                        index: postIndex);
+                  },
+                  child: Row(
                     children: [
-                      defaultText(
-                          text: post.name,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17),
+                      Icon(Icons.chat_bubble_outline),
                       SizedBox(
                         width: Adaptive.w(1),
                       ),
-                      Icon(
-                        Icons.check_circle,
-                        color: Colors.blue,
-                      )
+                      defaultText(text: 'Comment'),
                     ],
                   ),
-                  SizedBox(
-                    height: Adaptive.h(.4),
-                  ),
-                  defaultText(text: post.dateTime, textColor: Colors.grey),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(left: Adaptive.w(3)),
-              child: defaultText(
-                  text: post.text, fontWeight: FontWeight.w500, fontSize: 16),
-            ),
-          ],
-        ),
-        SizedBox(
-          height: Adaptive.h(2),
-        ),
-        if (post.postImage != "")
-          Center(
-            child: Image.network(
-              post.postImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-        Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: Adaptive.w(5), vertical: Adaptive.h(2)),
-          child: Row(
-            children: [
-              Icon(myIcons.like),
-              SizedBox(
-                width: Adaptive.w(2),
-              ),
-              defaultText(text: '${postsCubit.likes[index]}'),
-              SizedBox(
-                width: Adaptive.w(5.5),
-              ),
-              Spacer(),
-              defaultText(text: '2 shares')
-            ],
-          ),
-        ),
-        Divider(
-          color: Colors.grey[600],
-          height: 2,
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: Adaptive.w(5.5),
-          ),
-          child: Row(
-            children: [
-              Flexible(
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(myIcons.like),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        postsCubit.likePost(
-                            postId: postsCubit.postsId[index],
-                            index: index,
-                            currentUser: currentUser);
-                      },
-                    ),
-                    defaultText(text: 'Like'),
-                  ],
-                ),
-              ),
-              Flexible(
+                )),
+                Flexible(
                   child: InkWell(
-                onTap: () {
-                  postsCubit.getComment(postId: postsCubit.postsId[index]);
-                  postsCubit.getLikedPostUsers(postId: postsCubit.postsId[index],context: context,index: index);
-
-                },
-                child: Row(
-                  children: [
-                    Icon(Icons.chat_bubble_outline),
-                    SizedBox(
-                      width: Adaptive.w(1),
+                    onTap: () {
+                      defaultDialog(
+                          text: 'Are you sure to share this post ?',
+                          context: context,
+                          declineText: 'Back',
+                          acceptText: 'Share Now',
+                          acceptFn: () {
+                            postsCubit.sharePost(
+                                post: post, currentUser: currentUser);
+                            Navigator.of(context, rootNavigator: true)
+                                .pop(context);
+                          },
+                          declineFn: () {
+                            Navigator.of(context, rootNavigator: true)
+                                .pop(context);
+                          });
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(Icons.ios_share),
+                        SizedBox(
+                          width: Adaptive.w(1),
+                        ),
+                        defaultText(text: 'Share'),
+                      ],
                     ),
-                    defaultText(text: 'Comment'),
-                  ],
+                  ),
                 ),
-              )),
-              Flexible(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Icon(Icons.share),
-                    SizedBox(
-                      width: Adaptive.w(1),
-                    ),
-                    defaultText(text: 'Share'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        )
-      ],
+              ],
+            ),
+          )
+        ],
+      ),
     ),
   );
 }

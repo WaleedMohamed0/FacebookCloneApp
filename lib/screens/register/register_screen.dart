@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/states.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_states.dart';
 
 import '../../components/components.dart';
 import '../login/login_screen.dart';
@@ -25,6 +25,9 @@ class RegisterScreen extends StatelessWidget {
         if (state is CreateUserSuccessState) {
           defaultToast(msg: "User Registered Successfully");
           navigateAndFinish(context, LoginScreen());
+        } else if (state is RegisterErrorState) {
+          defaultToast(
+              msg: "This Email is Already exists", backgroundColor: Colors.red);
         } else if (state is CreateUserErrorState) {
           defaultToast(msg: "Invalid Data", backgroundColor: Colors.red);
         }
@@ -194,7 +197,8 @@ class RegisterScreen extends StatelessWidget {
                               txt: 'Register',
                               isUpperCase: true,
                               function: () {
-                                if (formKey.currentState!.validate() &&cubit.gender.isNotEmpty) {
+                                if (formKey.currentState!.validate() &&
+                                    cubit.gender.isNotEmpty) {
                                   cubit.userRegister(
                                       email: emailController.text,
                                       password: passController.text,

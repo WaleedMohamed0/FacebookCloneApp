@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:social_app/cubits/chats_cubit/cubit.dart';
-import 'package:social_app/cubits/posts_cubit/cubit.dart';
-import 'package:social_app/cubits/user_cubit/cubit.dart';
+import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/screens/login/login_screen.dart';
 
 void main() async {
