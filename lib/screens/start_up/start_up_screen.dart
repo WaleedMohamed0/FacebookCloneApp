@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/screens/chats/messenger_screen.dart';
@@ -50,12 +51,12 @@ class StartUpScreen extends StatelessWidget {
                       focusColor: transparentColor,
                       highlightColor: transparentColor,
                       onTap: () {
+                        ChatsCubit.get(context).getLastMessages(context);
                         navigateToWithAnimation(
                             context: context,
                             nextScreen: MessengerScreen(),
                             durationInMilliSecs: 500,
-                            pageTransitionType:
-                            PageTransitionType.rightToLeft);
+                            pageTransitionType: PageTransitionType.rightToLeft);
                       },
                       child: CircleAvatar(
                           backgroundColor: Colors.grey[200],
@@ -71,8 +72,8 @@ class StartUpScreen extends StatelessWidget {
                 bottom: TabBar(
                     indicator: UnderlineTabIndicator(
                         borderSide: BorderSide(width: 3.0),
-                        insets: EdgeInsets.symmetric(
-                            horizontal: Adaptive.w(9))),
+                        insets:
+                            EdgeInsets.symmetric(horizontal: Adaptive.w(9))),
                     unselectedLabelColor: Colors.grey[600],
                     labelColor: Colors.blue,
                     tabs: [
@@ -80,24 +81,24 @@ class StartUpScreen extends StatelessWidget {
                         width: Adaptive.w(20),
                         child: Tab(
                             icon: Icon(
-                              Icons.home,
-                              size: 28,
-                            )),
+                          Icons.home,
+                          size: 28,
+                        )),
                       ),
                       SizedBox(
                           width: Adaptive.w(20),
                           child: Tab(
                               icon: Icon(
-                                Icons.person,
-                                size: 28,
-                              ))),
+                            Icons.person,
+                            size: 28,
+                          ))),
                       SizedBox(
                           width: Adaptive.w(20),
                           child: Tab(
                               icon: Icon(
-                                Icons.notifications,
-                                size: 28,
-                              ))),
+                            Icons.notifications,
+                            size: 28,
+                          ))),
                     ]),
               ),
             ),

@@ -50,6 +50,7 @@ class UserCubit extends Cubit<UserStates> {
     required String age,
   }) {
     emit(RegisterLoadingState());
+    print(email);
     FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password)
         .then((value) {
@@ -63,16 +64,18 @@ class UserCubit extends Cubit<UserStates> {
 
       emit(RegisterSuccessState());
     }).catchError((error) {
+      print(error.toString());
       emit(RegisterErrorState());
     });
   }
 
-  void createUser({required String email,
-    required String phone,
-    required String name,
-    required String password,
-    required String uId,
-    required String age}) {
+  void createUser(
+      {required String email,
+      required String phone,
+      required String name,
+      required String password,
+      required String uId,
+      required String age}) {
     UserModel userModel = UserModel(
         name: name,
         email: email,
@@ -132,19 +135,19 @@ class UserCubit extends Cubit<UserStates> {
           );
         }
         // to get all users' data
-        else
-          {
-            users.add(UserModel(name: element['name'],
-                email: element['email'],
-                phone: element['phone'],
-                uId: element['uId'],
-                profilePhoto: element['profilePhoto'],
-                coverPhoto: element['coverPhoto'],
-                education: element['education'],
-                residence: element['residence'],
-                age: element['age'],
-                gender: element['gender']));
-          }
+        else {
+          users.add(UserModel(
+              name: element['name'],
+              email: element['email'],
+              phone: element['phone'],
+              uId: element['uId'],
+              profilePhoto: element['profilePhoto'],
+              coverPhoto: element['coverPhoto'],
+              education: element['education'],
+              residence: element['residence'],
+              age: element['age'],
+              gender: element['gender']));
+        }
       }
       gotProfileData = true;
       emit(GetUsersDataSuccessState());
@@ -152,7 +155,6 @@ class UserCubit extends Cubit<UserStates> {
       emit(GetUsersDataErrorState());
     });
   }
-
 
   final ImagePicker profileImagePicker = ImagePicker();
   File? profileImagePath;
@@ -190,10 +192,7 @@ class UserCubit extends Cubit<UserStates> {
       emit(UploadProfileImageState());
       FirebaseStorage.instance
           .ref()
-          .child('users/${Uri
-          .file(profileImagePath!.path)
-          .pathSegments
-          .last}')
+          .child('users/${Uri.file(profileImagePath!.path).pathSegments.last}')
           .putFile(profileImagePath!)
           .then((value) {
         value.ref.getDownloadURL().then((value) {
@@ -213,10 +212,7 @@ class UserCubit extends Cubit<UserStates> {
       emit(UploadCoverImageState());
       FirebaseStorage.instance
           .ref()
-          .child('users/${Uri
-          .file(coverImagePath!.path)
-          .pathSegments
-          .last}')
+          .child('users/${Uri.file(coverImagePath!.path).pathSegments.last}')
           .putFile(coverImagePath!)
           .then((value) {
         value.ref.getDownloadURL().then((value) {
@@ -252,9 +248,9 @@ class UserCubit extends Cubit<UserStates> {
       'education': education,
       'residence': residence,
       'profilePhoto':
-      profileImageUrl == "" ? userLogged!.profilePhoto : profileImageUrl,
+          profileImageUrl == "" ? userLogged!.profilePhoto : profileImageUrl,
       'coverPhoto':
-      coverImageUrl == "" ? userLogged!.coverPhoto : coverImageUrl,
+          coverImageUrl == "" ? userLogged!.coverPhoto : coverImageUrl,
     }).then((value) {
       getUsersData(email: userLogged!.email!);
       emit(UpdateUserSuccessState());
@@ -262,6 +258,4 @@ class UserCubit extends Cubit<UserStates> {
       emit(UpdateUserErrorState());
     });
   }
-
-
 }

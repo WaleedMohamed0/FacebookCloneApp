@@ -4,10 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
+import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
+import 'package:social_app/cubits/chats_cubit/chats_states.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
+import 'package:social_app/models/chat_model.dart';
 import 'package:social_app/models/post_model.dart';
 import 'package:social_app/models/user_data.dart';
 import 'package:social_app/screens/chats/chat_details.dart';
@@ -18,7 +21,7 @@ class MessengerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userCubit = UserCubit.get(context);
-
+    var chatsCubit = ChatsCubit.get(context);
     return ConditionalBuilder(
       condition: userCubit.userLogged!.profilePhoto != "",
       builder: (context) {
@@ -41,7 +44,7 @@ class MessengerScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 20.0,
                       backgroundImage:
-                      NetworkImage(userCubit.userLogged!.profilePhoto!),
+                          NetworkImage(userCubit.userLogged!.profilePhoto!),
                     ),
                     SizedBox(
                       width: 15.0,
@@ -92,26 +95,46 @@ class MessengerScreen extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child:
-                            searchTextField(onSubmit: (String searchQuery) {}),
+                            child: searchTextField(
+                                onSubmit: (String searchQuery) {}),
                           )
                         ],
                       ),
                       SizedBox(
-                        height: 20.0,
+                        height: Adaptive.h(2),
                       ),
                       if (userCubit.users.isNotEmpty)
-                        ListView.separated(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) =>
-                              buildChatItem(userCubit.users[index], context),
-                          separatorBuilder: (context, index) =>
-                              SizedBox(
-                                height: 20.0,
+                        BlocConsumer<ChatsCubit, ChatsStates>(
+                          listener: (context, state) {
+                            // TODO: implement listener
+                          },
+                          builder: (context, state) {
+                            return ConditionalBuilder(
+                              condition: chatsCubit.lastMessages.length ==
+                                  userCubit.users.length,
+                              builder: (context) {
+                                return ListView.separated(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    return buildChatItem(
+                                        userCubit.users[index],
+                                        context,
+                                        chatsCubit.lastMessages[index]);
+                                  },
+                                  separatorBuilder: (context, index) =>
+                                      SizedBox(
+                                    height: Adaptive.h(2),
+                                  ),
+                                  itemCount: userCubit.users.length,
+                                );
+                              },
+                              fallback: (context) => Center(
+                                child: CircularProgressIndicator(),
                               ),
-                          itemCount: userCubit.users.length,
-                        ),
+                            );
+                          },
+                        )
                     ],
                   ),
                 ),
@@ -120,92 +143,85 @@ class MessengerScreen extends StatelessWidget {
           },
         );
       },
-      fallback: (context) =>
-          Center(
-            child: CircularProgressIndicator(),
-          ),
+      fallback: (context) => Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 
-  Widget buildChatItem(UserModel model, context) =>
-      InkWell(
-        onTap: () {
-          navigateToWithAnimation(
-              context: context,
-              nextScreen: ChatDetails(model: model),
-              pageTransitionType: PageTransitionType.rightToLeft);
-        },
-        child: Row(
-          children: [
-            Stack(
-              alignment: AlignmentDirectional.bottomEnd,
-              children: [
-                CircleAvatar(
-                  radius: 30.0,
-                  backgroundImage: NetworkImage(model.profilePhoto!),
+  Widget buildChatItem(UserModel model, context, ChatModel? lastMessage) {
+    return InkWell(
+      onTap: () {
+        navigateToWithAnimation(
+            context: context,
+            nextScreen: ChatDetails(model: model),
+            pageTransitionType: PageTransitionType.rightToLeft);
+      },
+      child: Row(
+        children: [
+          Stack(
+            alignment: AlignmentDirectional.bottomEnd,
+            children: [
+              CircleAvatar(
+                radius: 30.0,
+                backgroundImage: NetworkImage(model.profilePhoto!),
+              ),
+              Padding(
+                padding: EdgeInsetsDirectional.only(
+                  bottom: Adaptive.h(.3),
+                  end: Adaptive.h(.3),
                 ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    bottom: 3.0,
-                    end: 3.0,
-                  ),
-                  child: CircleAvatar(
-                    radius: 7.0,
-                    backgroundColor: Colors.green,
-                  ),
+                child: CircleAvatar(
+                  radius: 7.0,
+                  backgroundColor: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            width: Adaptive.w(4),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                defaultText(
+                  text: model.name!,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  maxLines: 1,
+                  textOverflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(
+                  height: Adaptive.h(2),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: defaultText(
+                          text: lastMessage!.senderId == loggedUserID
+                              ? "You: " '${lastMessage.text}'
+                              : lastMessage.text,
+                          maxLines: 1,
+                          textOverflow: TextOverflow.ellipsis,
+                          fontWeight: lastMessage.senderId == loggedUserID
+                              ? FontWeight.normal
+                              : FontWeight.bold),
+                    ),
+                    defaultText(
+                        text: lastMessage.dateTime,
+                        fontWeight: lastMessage.senderId == loggedUserID
+                            ? FontWeight.normal
+                            : FontWeight.bold),
+                  ],
                 ),
               ],
             ),
-            SizedBox(
-              width: 20.0,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  defaultText(
-                    text: model.name!,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    linesMax: 1,
-                    textOverflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(
-                    height: 5.0,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'hello my name is abdullah ahmed hello my name is abdullah ahmed',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                        ),
-                        child: Container(
-                          width: 7.0,
-                          height: 7.0,
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '02:00 pm',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
 
 // Widget buildStoryItem() => Container(
 //       width: 60.0,

@@ -19,3 +19,4 @@ List<String> profileTexts =
   "Education",
   "Residence"
 ];
+RegExp englishRegex = RegExp("[a-zA-Z]");

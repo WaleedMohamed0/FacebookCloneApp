@@ -6,3 +6,5 @@ class SendMessageSuccessState extends ChatsStates {}
 class SendMessageErrorState extends ChatsStates {}
 
 class GetMessagesSuccessState extends ChatsStates {}
+class GetLastMessagesLoadingState extends ChatsStates {}
+class GetLastMessagesSuccessState extends ChatsStates {}

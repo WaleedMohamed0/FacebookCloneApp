@@ -131,7 +131,7 @@ Widget defaultText(
         textColor,
         double? textHeight,
         double? wordSpacing,
-        linesMax,
+        maxLines,
         TextOverflow? textOverflow,
         FontStyle? fontStyle,
         TextStyle? hintStyle,
@@ -142,7 +142,7 @@ Widget defaultText(
         TextDirection? textDirection}) =>
     Text(
       isUpperCase ? text.toUpperCase() : text,
-      maxLines: linesMax,
+      maxLines: maxLines,
       overflow: textOverflow,
       textAlign: textAlign,
       // textDirection:TextDirection.LTR,
@@ -344,13 +344,12 @@ Future<bool?> defaultToast(
 
 Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
     UserModel currentUser) {
-  RegExp exp = RegExp("[a-zA-Z]");
   return Padding(
     padding: EdgeInsets.only(bottom: Adaptive.h(1.5)),
     child: Card(
       elevation: 10,
       child: Column(
-        crossAxisAlignment: exp.hasMatch(post.text)
+        crossAxisAlignment: englishRegex.hasMatch(post.text)
             ? CrossAxisAlignment.start
             : CrossAxisAlignment.end,
         children: [

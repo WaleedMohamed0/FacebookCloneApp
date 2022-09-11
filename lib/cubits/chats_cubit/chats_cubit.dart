@@ -21,8 +21,9 @@ class ChatsCubit extends Cubit<ChatsStates> {
       receiverId: receiverId,
       senderId: loggedUserID,
       text: text,
-      dateTime:
-          DateFormat('yyyy-MM-dd – h:mm:ss a').format(DateTime.now()).toString(),
+      dateTime: DateFormat('yyyy-MM-dd – h:mm:ss a')
+          .format(DateTime.now())
+          .toString(),
     );
 
     // send message to my chat
@@ -57,6 +58,7 @@ class ChatsCubit extends Cubit<ChatsStates> {
   List<ChatModel> messages = [];
 
   void getMessages({required String receiverId}) {
+    // print(receiverId);
     FirebaseFirestore.instance
         .collection('users')
         .doc(loggedUserID)
@@ -77,5 +79,41 @@ class ChatsCubit extends Cubit<ChatsStates> {
 
       emit(GetMessagesSuccessState());
     });
+  }
+
+  List<ChatModel> lastMessages = [];
+  bool gotLastMessages = false;
+
+  void getLastMessages(context) {
+    emit(GetLastMessagesLoadingState());
+    lastMessages.clear();
+    for (var user in UserCubit.get(context).users) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(loggedUserID)
+          .collection('chats')
+          .doc(user.uId)
+          .collection('messages')
+          .orderBy('dateTime', descending: false)
+          .get()
+          .then((value) {
+        if (value.docs.isNotEmpty) {
+          lastMessages.add(ChatModel(
+              receiverId: value.docs.last['receiverId'],
+              senderId: value.docs.last['senderId'],
+              text: value.docs.last['text'],
+              dateTime:
+                  value.docs.last['dateTime'].toString().substring(12, 17) +
+                      value.docs.last['dateTime'].toString().substring(20)));
+        }
+        // to fill list length with users length to avoid errors
+        else {
+          lastMessages.add(
+              ChatModel(receiverId: '', senderId: '', text: '', dateTime: ''));
+        }
+      }).then((value) {
+        emit(GetLastMessagesSuccessState());
+      });
+    }
   }
 }

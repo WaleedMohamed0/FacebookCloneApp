@@ -24,7 +24,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var postsCubit = PostsCubit.get(context);
     var userCubit = UserCubit.get(context);
-    RegExp exp = RegExp("[a-zA-Z]");
     return BlocConsumer<PostsCubit, PostsStates>(
       listener: (context, state) {
         if (state is SharePostSuccessState) {
