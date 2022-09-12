@@ -1,5 +1,5 @@
 class UserModel {
-  String email="";
+  String email = "";
   String? name;
   String? phone;
   String? age;
@@ -23,6 +23,19 @@ class UserModel {
       required this.residence,
       this.age,
       this.gender});
+
+  UserModel.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    email = json['email'];
+    phone = json['phone'];
+    uId = json['uId'];
+    password = json['password'];
+    age = json['age'];
+    profilePhoto = json['profilePhoto'];
+    coverPhoto = json['coverPhoto'];
+    education = json['education'];
+    residence = json['residence'];
+  }
 
   Map<String, dynamic> toMap() {
     return {

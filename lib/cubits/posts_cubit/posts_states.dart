@@ -44,3 +44,6 @@ class GetOthersProfileSuccessState extends PostsStates{}
 class SharePostLoadingState extends PostsStates{}
 class SharePostSuccessState extends PostsStates{}
 class SharePostErrorState extends PostsStates{}
+
+class SearchPostsLoadingState extends PostsStates{}
+class SearchPostsSuccessState extends PostsStates{}

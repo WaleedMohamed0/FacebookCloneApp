@@ -22,6 +22,7 @@ class MessengerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var userCubit = UserCubit.get(context);
     var chatsCubit = ChatsCubit.get(context);
+
     return ConditionalBuilder(
       condition: userCubit.userLogged!.profilePhoto != "",
       builder: (context) {
@@ -41,6 +42,9 @@ class MessengerScreen extends StatelessWidget {
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    if(UserCubit.get(context).userLogged != null &&
+                        UserCubit.get(context).userLogged!.profilePhoto !=
+                            "")
                     CircleAvatar(
                       radius: 20.0,
                       backgroundImage:
@@ -95,15 +99,19 @@ class MessengerScreen extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: searchTextField(
-                                onSubmit: (String searchQuery) {}),
+                            child:
+                                searchTextField(onChange: (String searchQuery) {
+                              userCubit.searchMessengerUsers(
+                                  searchQuery: searchQuery);
+                            }),
                           )
                         ],
                       ),
                       SizedBox(
                         height: Adaptive.h(2),
                       ),
-                      if (userCubit.users.isNotEmpty)
+                      if (userCubit.users.isNotEmpty &&
+                          state is! SearchMessengerUsersErrorState)
                         BlocConsumer<ChatsCubit, ChatsStates>(
                           listener: (context, state) {
                             // TODO: implement listener
@@ -118,7 +126,10 @@ class MessengerScreen extends StatelessWidget {
                                   shrinkWrap: true,
                                   itemBuilder: (context, index) {
                                     return buildChatItem(
-                                        userCubit.users[index],
+                                        userCubit.searchMessengerList.isEmpty
+                                            ? userCubit.users[index]
+                                            : userCubit
+                                                .searchMessengerList[index],
                                         context,
                                         chatsCubit.lastMessages[index]);
                                   },
@@ -126,7 +137,10 @@ class MessengerScreen extends StatelessWidget {
                                       SizedBox(
                                     height: Adaptive.h(2),
                                   ),
-                                  itemCount: userCubit.users.length,
+                                  itemCount: userCubit
+                                          .searchMessengerList.isEmpty
+                                      ? userCubit.users.length
+                                      : userCubit.searchMessengerList.length,
                                 );
                               },
                               fallback: (context) => Center(

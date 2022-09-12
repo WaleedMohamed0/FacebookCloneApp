@@ -35,8 +35,7 @@ class HomeScreen extends StatelessWidget {
         return Scaffold(
           body: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: Adaptive.h(2)),
+              padding: EdgeInsets.symmetric(vertical: Adaptive.h(2)),
               child: Column(
                 children: [
                   BlocConsumer<UserCubit, UserStates>(
@@ -44,107 +43,100 @@ class HomeScreen extends StatelessWidget {
                       // TODO: implement listener
                     },
                     builder: (context, state) {
-                      return ConditionalBuilder(
-                        condition: (UserCubit.get(context).userLogged != null &&
-                            UserCubit.get(context).userLogged!.profilePhoto !=
-                                ""),
-                        builder: (context) {
-                          return Row(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(left: Adaptive.w(1.6)),
-                                child: InkWell(
-                                  onTap: () {
-                                    navigateToWithAnimation(
-                                        context: context,
-                                        nextScreen: ProfileScreen(
-                                            userModel: userCubit.userLogged),
-                                        pageTransitionType:
-                                            PageTransitionType.rightToLeft);
-                                  },
-                                  child: CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                      UserCubit.get(context)
-                                          .userLogged!
-                                          .profilePhoto!,
-                                    ),
-                                    radius: 25,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: Adaptive.w(3),
-                              ),
-                              Expanded(
-                                  child: TextFormField(
+                      return Row(
+                        children: [
+                          if (UserCubit.get(context).userLogged != null &&
+                              UserCubit.get(context).userLogged!.profilePhoto !=
+                                  "")
+                            Padding(
+                              padding: EdgeInsets.only(left: Adaptive.w(2)),
+                              child: InkWell(
                                 onTap: () {
                                   navigateToWithAnimation(
                                       context: context,
-                                      nextScreen: CreateNewPost(),
-                                      durationInMilliSecs: 500,
+                                      nextScreen: ProfileScreen(
+                                          userModel: userCubit.userLogged),
                                       pageTransitionType:
-                                          PageTransitionType.bottomToTop);
+                                          PageTransitionType.rightToLeft);
                                 },
-                                decoration: InputDecoration(
-                                    hintText: 'What\'s on your mind?',
-                                    contentPadding:
-                                        EdgeInsets.symmetric(horizontal: 18),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(25),
-                                    )),
-                              )),
-                              Padding(
-                                padding: EdgeInsets.only(left: Adaptive.w(1)),
-                                child: IconButton(
-                                  icon: Icon(Icons.image,
-                                      color: Colors.green, size: 28),
-                                  onPressed: () {
-                                    Navigator.of(context, rootNavigator: true)
-                                        .push(PageTransition(
-                                            // alignment: Alignment.center,
-                                            child: CreateNewPost(),
-                                            type: PageTransitionType
-                                                .rightToLeft));
-                                  },
+                                child: CircleAvatar(
+                                  backgroundImage: NetworkImage(
+                                    UserCubit.get(context)
+                                        .userLogged!
+                                        .profilePhoto!,
+                                  ),
+                                  radius: 25,
                                 ),
-                              )
-                            ],
-                          );
-                        },
-                        fallback: (context) => Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                              ),
+                            ),
+                          SizedBox(
+                            width: Adaptive.w(3),
+                          ),
+                          Expanded(
+                              child: TextFormField(
+                            onTap: () {
+                              navigateToWithAnimation(
+                                  context: context,
+                                  nextScreen: CreateNewPost(),
+                                  durationInMilliSecs: 500,
+                                  pageTransitionType:
+                                      PageTransitionType.bottomToTop);
+                            },
+                            decoration: InputDecoration(
+                                hintText: 'What\'s on your mind?',
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 18),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                )),
+                          )),
+                          Padding(
+                            padding: EdgeInsets.only(left: Adaptive.w(1)),
+                            child: IconButton(
+                              icon: Icon(Icons.image,
+                                  color: Colors.green, size: 28),
+                              onPressed: () {
+                                navigateToWithAnimation(
+                                    context: context,
+                                    nextScreen: CreateNewPost(),
+                                    pageTransitionType:
+                                        PageTransitionType.rightToLeft);
+                              },
+                            ),
+                          )
+                        ],
                       );
                     },
                   ),
                   SizedBox(
                     height: Adaptive.h(2.5),
                   ),
-                  ConditionalBuilder(
-                    condition:
-                        postsCubit.gotAllPosts && postsCubit.likes.isNotEmpty,
-                    builder: (context) {
-                      return ListView.separated(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return buildPost(
-                                postsCubit.allPosts[index],
-                                postsCubit,
-                                index,
-                                context,
-                                userCubit.userLogged!);
-                          },
-                          separatorBuilder: (context, index) => SizedBox(
-                                height: Adaptive.h(2),
-                              ),
-                          itemCount: postsCubit.allPosts.length);
-                    },
-                    fallback: (context) => Center(
-                      child: CircularProgressIndicator(),
+                  if (postsCubit.allPosts.isNotEmpty)
+                    ConditionalBuilder(
+                      condition:
+                          postsCubit.gotAllPosts && postsCubit.likes.isNotEmpty,
+                      builder: (context) {
+                        return ListView.separated(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return buildPost(
+                                  postsCubit.allPosts[index],
+                                  postsCubit,
+                                  index,
+                                  context,
+                                  userCubit.userLogged!);
+                            },
+                            separatorBuilder: (context, index) => SizedBox(
+                                  height: Adaptive.h(2),
+                                ),
+                            itemCount: postsCubit.allPosts.length);
+                      },
+                      fallback: (context) => Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

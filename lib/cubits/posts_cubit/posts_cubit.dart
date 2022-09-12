@@ -48,7 +48,9 @@ class PostsCubit extends Cubit<PostsStates> {
   PostModel? postModel;
 
   void createNewPost(
-      {required String text, String? postImage, required UserModel currentUser}) {
+      {required String text,
+      String? postImage,
+      required UserModel currentUser}) {
     emit(CreateNewPostLoadingState());
 
     postModel = PostModel(
@@ -94,16 +96,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .then((value) {
       for (var element in value.docs) {
         allPosts.add(
-          PostModel(
-              text: element['text'],
-              name: element['name'],
-              uId: element['uId'],
-              postImage: element['postImage'],
-              profilePhoto: element['profilePhoto'],
-              coverPhoto: element['coverPhoto'],
-              education: element['education'],
-              residence: element['residence'],
-              dateTime: element['dateTime']),
+          PostModel.fromJson(element.data()),
         );
         postsId.add(element.id);
         getLikes(element: element);
@@ -131,16 +124,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .then((value) {
       for (var element in value.docs) {
         if (element['uId'] == loggedUserID) {
-          myPosts.add(PostModel(
-              text: element['text'],
-              name: element['name'],
-              uId: element['uId'],
-              postImage: element['postImage'],
-              profilePhoto: element['profilePhoto'],
-              coverPhoto: element['coverPhoto'],
-              education: element['education'],
-              residence: element['residence'],
-              dateTime: element['dateTime']));
+          myPosts.add(PostModel.fromJson(element.data()));
         }
       }
       gotMyPosts = true;
@@ -152,7 +136,6 @@ class PostsCubit extends Cubit<PostsStates> {
 
   void removePost({required String postId, required int postIndex}) {
     emit(RemovePostLoadingState());
-    print(postId);
     FirebaseFirestore.instance
         .collection('posts')
         .doc(postId)
@@ -160,6 +143,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .then((value) {
       allPosts.removeAt(postIndex);
       myPosts.removeAt(postIndex);
+      searchPostsList.removeAt(postIndex);
       emit(RemovePostSuccessState());
     }).catchError((error) {
       emit(RemovePostErrorState());
@@ -323,15 +307,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        usersLiked.add(UserModel(
-            name: element.data()['name'],
-            email: element.data()['email'],
-            phone: element.data()['phone'],
-            uId: element.data()['uId'],
-            profilePhoto: element.data()['profilePhoto'],
-            coverPhoto: element.data()['coverPhoto'],
-            education: element.data()['education'],
-            residence: element.data()['residence']));
+        usersLiked.add(UserModel.fromJson(element.data()));
       }
     }).then((value) {
       navigateToWithAnimation(
@@ -353,16 +329,7 @@ class PostsCubit extends Cubit<PostsStates> {
     FirebaseFirestore.instance.collection('posts').get().then((value) {
       for (var element in value.docs) {
         if (element['uId'] == uId) {
-          otherUsersPosts.add(PostModel(
-              text: element['text'],
-              name: element['name'],
-              uId: element['uId'],
-              postImage: element['postImage'],
-              profilePhoto: element['profilePhoto'],
-              coverPhoto: element['coverPhoto'],
-              education: element['education'],
-              residence: element['residence'],
-              dateTime: element['dateTime']));
+          otherUsersPosts.add(PostModel.fromJson(element.data()));
         }
       }
       emit(GetOthersProfileSuccessState());
@@ -421,22 +388,16 @@ class PostsCubit extends Cubit<PostsStates> {
         .then((value) {
       value.reference.collection('comments').get().then((value) {
         for (var element in value.docs) {
-          comments.add(CommentModel(
-              profilePhoto: element['profilePhoto'],
-              name: element['name'],
-              uId: element['uId'],
-              education: element['education'],
-              coverPhoto: element['coverPhoto'],
-              residence: element['residence'],
-              commentText: element['comment']));
+          comments.add(CommentModel.fromJson(element.data()));
         }
         emit(GotCommentsSuccessState());
       });
     });
   }
+
   PostModel? sharePostModel;
-  void sharePost({required PostModel post,required UserModel currentUser})
-  {
+
+  void sharePost({required PostModel post, required UserModel currentUser}) {
     emit(SharePostLoadingState());
     sharePostModel = PostModel(
         text: post.text,
@@ -452,12 +413,29 @@ class PostsCubit extends Cubit<PostsStates> {
             .toString());
     FirebaseFirestore.instance
         .collection('posts')
-    // to add random ID for Each Post
+        // to add random ID for Each Post
         .add(sharePostModel!.toMap())
         .then((value) {
       emit(SharePostSuccessState());
     }).catchError((error) {
       emit(SharePostErrorState());
     });
+  }
+
+  List<PostModel> searchPostsList = [];
+
+  void searchPosts({required String searchQuery}) {
+    emit(SearchPostsLoadingState());
+    searchPostsList.clear();
+
+    for (var i = 0; i < allPosts.length; i++) {
+      if (allPosts[i].text.toLowerCase().contains(searchQuery.toLowerCase())) {
+        searchPostsList.add(allPosts[i]);
+      }
+    }
+    if (searchQuery == "") {
+      searchPostsList.clear();
+    }
+    emit(SearchPostsSuccessState());
   }
 }

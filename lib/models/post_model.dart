@@ -20,6 +20,18 @@ class PostModel {
       required this.residence,
       required this.dateTime});
 
+  PostModel.fromJson(Map<String, dynamic> json) {
+    text = json['text'];
+    name = json['name'];
+    uId = json['uId'];
+    postImage = json['postImage'];
+    profilePhoto = json['profilePhoto'];
+    coverPhoto = json['coverPhoto'];
+    education = json['education'];
+    residence = json['residence'];
+    dateTime = json['dateTime'];
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,

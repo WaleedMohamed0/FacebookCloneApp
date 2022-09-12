@@ -6,6 +6,7 @@ import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/screens/chats/messenger_screen.dart';
+import 'package:social_app/screens/posts_screen/search_posts_screen.dart';
 
 import '../../components/components.dart';
 import '../../components/constants.dart';
@@ -35,7 +36,12 @@ class StartUpScreen extends StatelessWidget {
                   CircleAvatar(
                     backgroundColor: Colors.grey[200],
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        navigateToWithAnimation(
+                            context: context,
+                            nextScreen: SearchPostsScreen(),
+                            pageTransitionType: PageTransitionType.rightToLeft);
+                      },
                       icon: Icon(
                         Icons.search,
                         color: Colors.black,

@@ -1,4 +1,5 @@
 import 'package:conditional_builder/conditional_builder.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -27,9 +28,13 @@ class ChatDetails extends StatelessWidget {
       builder: (context) {
         return WillPopScope(
           onWillPop: () async {
-            // when user clicks on back button in his mobile
-            chatsCubit.getLastMessages(context);
-            Navigator.pop(context);
+            if (chatsCubit.emojiShow) {
+              // when user clicks on back button in his mobile
+              chatsCubit.getLastMessages(context);
+              Navigator.pop(context);
+            } else {
+              chatsCubit.emojiSelect();
+            }
             return false;
           },
           child: Scaffold(
@@ -104,11 +109,32 @@ class ChatDetails extends StatelessWidget {
                                 padding: EdgeInsets.zero,
                                 child: defaultTextField(
                                     textInput: TextInputType.text,
-                                    borderRadius: 30,
+                                    borderRadius: 33,
                                     fillColor: Colors.grey[100]!,
                                     hintText: "Message",
+                                    onTap: () {
+                                      // off emojis if keyboard is on
+                                      if (!chatsCubit.emojiShow) {
+                                        chatsCubit.emojiSelect();
+                                      }
+                                    },
+                                    prefixIcon: InkWell(
+                                        onTap: () {
+                                          // on emojis and close keyboard
+                                          FocusScopeNode currentFocus =
+                                              FocusScope.of(context);
+                                          if (!currentFocus.hasPrimaryFocus) {
+                                            currentFocus.unfocus();
+                                          }
+                                          chatsCubit.emojiSelect();
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.only(left: Adaptive.w(2)),
+                                          child: Icon(
+                                              Icons.emoji_emotions_outlined),
+                                        )),
                                     controller: messageController,
-                                    contentPadding: 22),
+                                    contentPadding: 24),
                               ),
                               SizedBox(
                                 width: Adaptive.w(1),
@@ -139,8 +165,46 @@ class ChatDetails extends StatelessWidget {
                                 padding: EdgeInsets.zero,
                                 size: 27,
                                 constraints: BoxConstraints(),
-                              )
+                              ),
                             ],
+                          ),
+                          Offstage(
+                            offstage: chatsCubit.emojiShow,
+                            child: SizedBox(
+                              height: Adaptive.h(30),
+                              child: EmojiPicker(
+                                textEditingController: messageController,
+                                onEmojiSelected:
+                                    (Category category, Emoji emoji) {},
+                                config: Config(
+                                  columns: 7,
+                                  emojiSizeMax: 32,
+                                  verticalSpacing: 0,
+                                  horizontalSpacing: 0,
+                                  gridPadding: EdgeInsets.zero,
+                                  initCategory: Category.RECENT,
+                                  bgColor: const Color(0xFFF2F2F2),
+                                  indicatorColor: defaultColor,
+                                  iconColor: Colors.grey,
+                                  iconColorSelected: defaultColor,
+                                  progressIndicatorColor: defaultColor,
+                                  backspaceColor: defaultColor,
+                                  skinToneDialogBgColor: Colors.white,
+                                  skinToneIndicatorColor: Colors.grey,
+                                  enableSkinTones: true,
+                                  showRecentsTab: true,
+                                  recentsLimit: 28,
+                                  replaceEmojiOnLimitExceed: false,
+                                  noRecents: const Text(
+                                    'No Recents',
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.black26),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  tabIndicatorAnimDuration: kTabScrollDuration,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),

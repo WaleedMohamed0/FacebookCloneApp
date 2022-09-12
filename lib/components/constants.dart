@@ -5,13 +5,18 @@ import '../models/posts_additions.dart';
 const defaultColor = Colors.blue;
 const transparentColor = Colors.transparent;
 String loggedUserID = "";
+String defaultMaleProfilePhoto =
+    'https://freepikpsd.com/file/2019/10/default-avatar-png-Transparent-Images.png';
+String defaultFemaleProfilePhoto =
+    'https://images.assetsdelivery.com/compings_v2/thesomeday123/thesomeday1231712/thesomeday123171200008.jpg';
+String defaultCoverPhoto = 'https://wallpaperaccess.com/full/1690371.jpg';
 List<PostsAddition> postsAdditionList = [
-  PostsAddition(iconData: Icons.live_tv,iconColor: Colors.red, text: 'Live'),
-  PostsAddition(iconData: Icons.photo,iconColor: Colors.green, text: 'Photo'),
-  PostsAddition(iconData: Icons.flag,iconColor: Colors.indigo, text: 'Life event'),
+  PostsAddition(iconData: Icons.live_tv, iconColor: Colors.red, text: 'Live'),
+  PostsAddition(iconData: Icons.photo, iconColor: Colors.green, text: 'Photo'),
+  PostsAddition(
+      iconData: Icons.flag, iconColor: Colors.indigo, text: 'Life event'),
 ];
-List<String> profileTexts =
-[
+List<String> profileTexts = [
   "Name",
   "Password",
   "Phone",

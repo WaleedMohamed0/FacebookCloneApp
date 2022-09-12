@@ -26,4 +26,8 @@ class UpdateUserLoadingState extends UserStates{}
 class UpdateUserSuccessState extends UserStates{}
 class UpdateUserErrorState extends UserStates{}
 
+class SearchMessengerUsersLoadingState extends UserStates{}
+class SearchMessengerUsersSuccessState extends UserStates{}
+class SearchMessengerUsersErrorState extends UserStates{}
+
 

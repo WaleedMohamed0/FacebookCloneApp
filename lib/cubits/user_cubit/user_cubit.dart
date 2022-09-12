@@ -85,9 +85,9 @@ class UserCubit extends Cubit<UserStates> {
         uId: uId,
         age: age,
         profilePhoto: gender == 'Male'
-            ? 'https://freepikpsd.com/file/2019/10/default-avatar-png-Transparent-Images.png'
-            : 'https://images.assetsdelivery.com/compings_v2/thesomeday123/thesomeday1231712/thesomeday123171200008.jpg',
-        coverPhoto: 'https://wallpaperaccess.com/full/1690371.jpg',
+            ? defaultMaleProfilePhoto
+            : defaultFemaleProfilePhoto,
+        coverPhoto: defaultCoverPhoto,
         education: 'Add Your Education',
         residence: 'Add Your Residence');
     FirebaseFirestore.instance
@@ -120,33 +120,11 @@ class UserCubit extends Cubit<UserStates> {
         // to get user's logged data
         if (element['email'] == email) {
           loggedUserID = element['uId'];
-          userLogged = UserModel(
-            name: element['name'],
-            password: element['password'],
-            phone: element['phone'],
-            age: element['age'],
-            gender: element['gender'],
-            uId: element['uId'],
-            residence: element['residence'],
-            education: element['education'],
-            email: element['email'],
-            profilePhoto: element['profilePhoto'],
-            coverPhoto: element['coverPhoto'],
-          );
+          userLogged = UserModel.fromJson(element.data());
         }
         // to get all users' data
         else {
-          users.add(UserModel(
-              name: element['name'],
-              email: element['email'],
-              phone: element['phone'],
-              uId: element['uId'],
-              profilePhoto: element['profilePhoto'],
-              coverPhoto: element['coverPhoto'],
-              education: element['education'],
-              residence: element['residence'],
-              age: element['age'],
-              gender: element['gender']));
+          users.add(UserModel.fromJson(element.data()));
         }
       }
       gotProfileData = true;
@@ -252,10 +230,27 @@ class UserCubit extends Cubit<UserStates> {
       'coverPhoto':
           coverImageUrl == "" ? userLogged!.coverPhoto : coverImageUrl,
     }).then((value) {
-      getUsersData(email: userLogged!.email!);
+      getUsersData(email: userLogged!.email);
       emit(UpdateUserSuccessState());
     }).catchError((error) {
       emit(UpdateUserErrorState());
     });
+  }
+
+  List<UserModel> searchMessengerList = [];
+
+  void searchMessengerUsers({required String searchQuery}) {
+    searchMessengerList.clear();
+    emit(SearchMessengerUsersLoadingState());
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].name!.toLowerCase().contains(searchQuery.toLowerCase())) {
+        searchMessengerList.add(users[i]);
+      }
+    }
+    if (searchMessengerList.isEmpty) {
+      emit(SearchMessengerUsersErrorState());
+    } else {
+      emit(SearchMessengerUsersSuccessState());
+    }
   }
 }

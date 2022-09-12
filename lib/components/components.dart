@@ -1,3 +1,4 @@
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -51,6 +52,7 @@ Widget defaultTextField({
   bool profileFields = false,
   double contentPadding = 20,
   double borderRadius = 10,
+  Function()? onTap
 }) {
   return TextFormField(
       maxLines: maxLines,
@@ -59,6 +61,8 @@ Widget defaultTextField({
       controller: controller,
       onFieldSubmitted: onSubmit,
       obscureText: isPass,
+      onTap: onTap,
+      enableSuggestions: true,
       decoration: !profileFields
           ? InputDecoration(
               alignLabelWithHint: true,
@@ -92,12 +96,12 @@ Widget defaultTextField({
 }
 
 Widget searchTextField({
-  required Function(String searchQuery) onSubmit,
+  required Function(String searchQuery) onChange,
 }) =>
     TextFormField(
       keyboardType: TextInputType.text,
-      onFieldSubmitted: (String searchQuery) {
-        onSubmit(searchQuery);
+      onChanged: (String searchQuery) {
+        onChange(searchQuery);
       },
       decoration: InputDecoration(
         contentPadding: EdgeInsets.all(25),
@@ -315,6 +319,7 @@ AppBar defaultAppBar(
         List<Widget>? actions,
         Color foregroundColor = Colors.black,
         double? elevation,
+          bool centerTitle = false,
         Color? backgroundColor,
         PreferredSizeWidget? preferredSizeWidget}) =>
     AppBar(
@@ -326,6 +331,7 @@ AppBar defaultAppBar(
       elevation: elevation,
       leading: leading,
       bottom: preferredSizeWidget,
+      centerTitle: centerTitle,
       title: defaultText(
           text: title,
           fontWeight: fontWeight,
@@ -571,3 +577,40 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
     ),
   );
 }
+
+// EmojiPicker emojiSelect({required textEditingController}) {
+//
+//   return EmojiPicker(
+//     textEditingController: textEditingController,
+//     onEmojiSelected: (emoji, category) {
+//       textEditingController.text = textEditingController.text + emoji;
+//     },
+//     config: Config(
+//       columns: 7,
+//       emojiSizeMax: 32, // Issue: https://github.com/flutter/flutter/issues/28894
+//       verticalSpacing: 0,
+//       horizontalSpacing: 0,
+//       gridPadding: EdgeInsets.zero,
+//       initCategory: Category.RECENT,
+//       bgColor: Color(0xFFF2F2F2),
+//       indicatorColor: Colors.blue,
+//       iconColor: Colors.grey,
+//       iconColorSelected: Colors.blue,
+//       progressIndicatorColor: Colors.blue,
+//       backspaceColor: Colors.blue,
+//       skinToneDialogBgColor: Colors.white,
+//       skinToneIndicatorColor: Colors.grey,
+//       enableSkinTones: true,
+//       showRecentsTab: true,
+//       recentsLimit: 28,
+//       noRecents: const Text(
+//         'No Recents',
+//         style: TextStyle(fontSize: 20, color: Colors.black26),
+//         textAlign: TextAlign.center,
+//       ),
+//       tabIndicatorAnimDuration: kTabScrollDuration,
+//       categoryIcons: const CategoryIcons(),
+//       buttonMode: ButtonMode.MATERIAL,
+//     ),
+//   );
+// }

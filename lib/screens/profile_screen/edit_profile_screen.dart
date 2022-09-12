@@ -159,7 +159,7 @@ class EditProfileScreen extends StatelessWidget {
                       state is UploadCoverImageState ||
                       state is UpdateUserLoadingState)
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4)),
+                      padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4),vertical: Adaptive.h(.6)),
                       child: const LinearProgressIndicator(),
                     ),
                   ListView.separated(

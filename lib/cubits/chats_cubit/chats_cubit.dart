@@ -116,4 +116,12 @@ class ChatsCubit extends Cubit<ChatsStates> {
       });
     }
   }
+
+  bool emojiShow=true;
+  void emojiSelect()
+  {
+    emojiShow = !emojiShow;
+    emit(EmojySelectState());
+  }
+
 }

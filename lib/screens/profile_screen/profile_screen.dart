@@ -25,10 +25,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var postTextController = TextEditingController();
     var userCubit = UserCubit.get(context);
     var postsCubit = PostsCubit.get(context);
-    print(userModel);
+
     return BlocConsumer<UserCubit, UserStates>(
       listener: (context, state) {},
       builder: (context, state) {
@@ -168,13 +167,11 @@ class ProfileScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (userModel == null ||
-                              userModel!.uId == loggedUserID)
+                          if (userModel == null)
                             SizedBox(
                               height: Adaptive.h(3),
                             ),
-                          if (userModel == null ||
-                              userModel!.uId == loggedUserID)
+                          if (userModel == null )
                             Center(
                               child: defaultBtnWithIcon(
                                 txt: 'Edit Profile',
@@ -331,11 +328,12 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    if(postsCubit.allPosts.isNotEmpty)
                     BlocConsumer<PostsCubit, PostsStates>(
                       listener: (context, state) {},
                       builder: (context, state) {
                         return ConditionalBuilder(
-                          condition: postsCubit.gotMyPosts,
+                          condition: postsCubit.gotMyPosts && postsCubit.likes.isNotEmpty,
                           builder: (context) {
                             return ListView.separated(
                                 shrinkWrap: true,
