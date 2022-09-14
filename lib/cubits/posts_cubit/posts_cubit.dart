@@ -10,12 +10,14 @@ import 'package:page_transition/page_transition.dart';
 import 'package:social_app/cubits/posts_cubit/posts_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/comment_model.dart';
+import 'package:social_app/models/like_model.dart';
 import 'package:social_app/models/user_data.dart';
+import 'package:social_app/screens/profile_screen/my_profile_screen.dart';
 
 import '../../components/components.dart';
 import '../../components/constants.dart';
 import '../../models/post_model.dart';
-import '../../screens/posts_screen/comments_screen.dart';
+import '../../screens/comments_screen/comments_screen.dart';
 
 class PostsCubit extends Cubit<PostsStates> {
   PostsCubit() : super(PostsCubitInitialState());
@@ -25,6 +27,8 @@ class PostsCubit extends Cubit<PostsStates> {
   File? postImagePath;
 
   void getPostImage() {
+    emit(GotPostImagePathLoadingState());
+
     postImagePicker.pickImage(source: ImageSource.gallery).then((value) {
       postImagePath = Io.File(value!.path);
       emit(GotPostImagePathSuccessState());
@@ -59,12 +63,7 @@ class PostsCubit extends Cubit<PostsStates> {
         name: currentUser.name!,
         uId: loggedUserID,
         profilePhoto: currentUser.profilePhoto!,
-        coverPhoto: currentUser.coverPhoto!,
-        education: currentUser.education!,
-        residence: currentUser.residence!,
-        dateTime: DateFormat('yyyy-MM-dd – h:mm a')
-            .format(DateTime.now())
-            .toString());
+        dateTime: DateTime.now().toIso8601String());
     FirebaseFirestore.instance
         .collection('posts')
         // to add random ID for Each Post
@@ -117,21 +116,14 @@ class PostsCubit extends Cubit<PostsStates> {
   Future<void> getMyPosts() async {
     emit(GetMyPostsLoadingState());
     myPosts.clear();
-    FirebaseFirestore.instance
-        .collection('posts')
-        .orderBy("dateTime", descending: true)
-        .get()
-        .then((value) {
-      for (var element in value.docs) {
-        if (element['uId'] == loggedUserID) {
-          myPosts.add(PostModel.fromJson(element.data()));
-        }
+
+    for (var post in allPosts) {
+      if (post.uId == loggedUserID) {
+        myPosts.add(post);
       }
-      gotMyPosts = true;
-      emit(GetMyPostsSuccessState());
-    }).catchError((error) {
-      emit(GetMyPostsErrorState());
-    });
+    }
+    gotMyPosts = true;
+    emit(GetMyPostsSuccessState());
   }
 
   void removePost({required String postId, required int postIndex}) {
@@ -150,67 +142,35 @@ class PostsCubit extends Cubit<PostsStates> {
     });
   }
 
-  // void updatePosts()
-  // {
-  //   FirebaseFirestore.instance.collection('posts').snapshots().listen((querySnapshot)
-  //   {
-  //     for (var element in querySnapshot.docChanges) {
-  //       print(element.doc);
-  //     }
-  //   });
-  // }
-
-  void updatePostsData({required UserCubit userCubit}) {
+  void updatePostsData({required UserModel currentUser}) {
     emit(UpdatePostsDataLoadingState());
+    Map<String, dynamic> updateUserMap = {
+      'name': currentUser.name,
+      'profilePhoto': currentUser.profilePhoto,
+    };
     FirebaseFirestore.instance.collection('posts').get().then((value) {
       for (var element in value.docs) {
         if (element['uId'] == loggedUserID) {
           FirebaseFirestore.instance
               .collection('posts')
               .doc(element.id)
-              .update({
-                'name': userCubit.userLogged!.name,
-                'profilePhoto': userCubit.profileImageUrl == ""
-                    ? userCubit.userLogged!.profilePhoto
-                    : userCubit.profileImageUrl,
-              })
-              .then((value) {})
-              .catchError((error) {});
-
-          // update users data who liked post
-          FirebaseFirestore.instance
-              .collection('posts')
-              .doc(element.id)
-              .collection('likes')
-              .doc(loggedUserID)
-              .update({
-                'name': userCubit.userLogged!.name,
-                'profilePhoto': userCubit.profileImageUrl == ""
-                    ? userCubit.userLogged!.profilePhoto
-                    : userCubit.profileImageUrl,
-              })
-              .then((value) {})
-              .catchError((error) {});
-
-          // update users data who commented on post
-          FirebaseFirestore.instance
-              .collection('posts')
-              .doc(element.id)
-              .collection('comments')
-              .get()
-              .then((value) {
-            for (var element in value.docs) {
-              if (element['uId'] == loggedUserID) {
-                element.reference.update({
-                  'name': userCubit.userLogged!.name,
-                  'profilePhoto': userCubit.profileImageUrl == ""
-                      ? userCubit.userLogged!.profilePhoto
-                      : userCubit.profileImageUrl,
-                });
-              }
-            }
-          }).catchError((error) {});
+              .update(updateUserMap);
         }
+
+        // update users data who liked post
+        element.reference
+            .collection('likes')
+            .doc(loggedUserID)
+            .update(updateUserMap);
+
+        // update users data who commented on post
+        element.reference.collection('comments').get().then((value) {
+          for (var element in value.docs) {
+            if (element['uId'] == loggedUserID) {
+              element.reference.update(updateUserMap);
+            }
+          }
+        }).catchError((error) {});
       }
       getAllPosts();
       emit(UpdatePostsDataSuccessState());
@@ -225,7 +185,7 @@ class PostsCubit extends Cubit<PostsStates> {
   }
 
   bool userLikedBefore = false;
-  UserModel? userLikedPost;
+  LikeModel? userLikedPost;
 
   void likePost(
       {required String postId, required int index, UserModel? currentUser}) {
@@ -236,6 +196,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .get()
         .then((value) {
       for (var i = 0; i < value.size; i++) {
+        // dislike a post
         if (value.docs[i].id.contains(loggedUserID)) {
           FirebaseFirestore.instance
               .collection('posts')
@@ -251,15 +212,10 @@ class PostsCubit extends Cubit<PostsStates> {
       }
     }).then((value) {
       if (!userLikedBefore) {
-        userLikedPost = UserModel(
-          name: currentUser!.name,
-          email: currentUser.email,
-          phone: currentUser.phone,
-          uId: currentUser.uId,
-          profilePhoto: currentUser.profilePhoto,
-          coverPhoto: currentUser.coverPhoto,
-          education: currentUser.education,
-          residence: currentUser.residence,
+        userLikedPost = LikeModel(
+          name: currentUser!.name!,
+          uId: currentUser.uId!,
+          profilePhoto: currentUser.profilePhoto!,
         );
         FirebaseFirestore.instance
             .collection('posts')
@@ -290,16 +246,18 @@ class PostsCubit extends Cubit<PostsStates> {
 
   void getLikes({required QueryDocumentSnapshot element}) {
     // to get all posts' likes
+    // print(element['text']);
     element.reference.collection('likes').get().then((value) {
       likes.add(value.docs.length);
+      // print(value.docs.length);
       emit(GetPostsLikesSuccessState());
     });
   }
 
-  List<UserModel> usersLiked = [];
+  List<LikeModel> usersLikedData = [];
 
   void getLikedUsers({required String postId, context, index}) {
-    usersLiked.clear();
+    usersLikedData.clear();
     FirebaseFirestore.instance
         .collection('posts')
         .doc(postId)
@@ -307,33 +265,40 @@ class PostsCubit extends Cubit<PostsStates> {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        usersLiked.add(UserModel.fromJson(element.data()));
+        usersLikedData.add(LikeModel.fromJson(element.data()));
       }
     }).then((value) {
-      navigateToWithAnimation(
-          context: context,
-          nextScreen: CommentsScreen(
-            postId: postId,
-            postIndex: index,
-          ),
-          durationInMilliSecs: 300,
-          pageTransitionType: PageTransitionType.rightToLeft);
+      emit(GetUsersPostsLikesSuccessState());
     });
   }
 
-  List<PostModel> otherUsersPosts = [];
+  // when user click on profilePhoto or name of any user
+  List<PostModel> userClickedPosts = [];
+  UserModel? userClickedData;
 
-  void getOtherUsersPosts({required String uId}) {
-    otherUsersPosts.clear();
-    emit(GetOthersProfileLoadingState());
+  Future<void> getUserClickedData({required String uId}) async {
+    userClickedData = null;
+    userClickedPosts.clear();
+
+    emit(GetUserDataClickedLoadingState());
+    // get profile data of user who has been clicked
+    FirebaseFirestore.instance.collection('users').doc(uId).get().then((value) {
+      userClickedData = UserModel.fromJson(value.data()!);
+      emit(GetUserDataClickedSuccessState());
+    });
+
+    // get user' posts
     FirebaseFirestore.instance.collection('posts').get().then((value) {
       for (var element in value.docs) {
         if (element['uId'] == uId) {
-          otherUsersPosts.add(PostModel.fromJson(element.data()));
+          userClickedPosts.add(PostModel.fromJson(element.data()));
         }
       }
-      emit(GetOthersProfileSuccessState());
+    }).then((value)
+    {
+      emit(GetUserPostsClickedSuccessState());
     });
+
   }
 
   CommentModel? commentModel;
@@ -341,16 +306,14 @@ class PostsCubit extends Cubit<PostsStates> {
   void addNewComment(
       {required String postId,
       required String commentText,
-      required UserCubit userCubit}) {
+      required UserModel currentUser}) {
     emit(AddNewCommentLoadingState());
     commentModel = CommentModel(
-        profilePhoto: userCubit.userLogged!.profilePhoto!,
-        name: userCubit.userLogged!.name!,
+        profilePhoto: currentUser.profilePhoto!,
+        name: currentUser.name!,
         commentText: commentText,
-        education: userCubit.userLogged!.education!,
-        coverPhoto: userCubit.userLogged!.coverPhoto!,
-        residence: userCubit.userLogged!.residence!,
-        uId: loggedUserID);
+        uId: loggedUserID,
+        dateTime: DateTime.now().toIso8601String());
     FirebaseFirestore.instance
         .collection('posts')
         .doc(postId)
@@ -405,9 +368,6 @@ class PostsCubit extends Cubit<PostsStates> {
         name: currentUser.name!,
         uId: loggedUserID,
         profilePhoto: currentUser.profilePhoto!,
-        coverPhoto: currentUser.coverPhoto!,
-        education: currentUser.education!,
-        residence: currentUser.residence!,
         dateTime: DateFormat('yyyy-MM-dd – h:mm a')
             .format(DateTime.now())
             .toString());

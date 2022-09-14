@@ -1,20 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
-import 'package:social_app/screens/profile_screen/profile_screen.dart';
+import 'package:social_app/screens/profile_screen/my_profile_screen.dart';
 
 import '../../components/components.dart';
+import '../../cubits/theme_manager/theme_cubit.dart';
 import '../../models/user_data.dart';
 
 class EditProfileScreen extends StatelessWidget {
-  dynamic userModel;
-
-  EditProfileScreen({this.userModel});
+  const EditProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +24,18 @@ class EditProfileScreen extends StatelessWidget {
         passwordController = TextEditingController(text: currentUser.password),
         phoneController = TextEditingController(text: currentUser.phone),
         ageController = TextEditingController(text: currentUser.age),
-        educationController = TextEditingController(text: currentUser.education),
-        residenceController = TextEditingController(text: currentUser.residence);
+        educationController =
+            TextEditingController(text: currentUser.education),
+        residenceController =
+            TextEditingController(text: currentUser.residence);
+    bool isDark = ThemeManagerCubit.get(context).isDark;
+
     return BlocConsumer<UserCubit, UserStates>(
       listener: (context, state) {
         if (state is GetUsersDataSuccessState) {
           defaultToast(msg: 'User Updated Successfully');
-          PostsCubit.get(context).updatePostsData(userCubit: cubit);
+          PostsCubit.get(context)
+              .updatePostsData(currentUser: cubit.userLogged!);
           Navigator.pop(context);
         } else if (state is UpdateUserErrorState) {
           defaultToast(
@@ -44,37 +49,58 @@ class EditProfileScreen extends StatelessWidget {
           defaultTextField(
               textInput: TextInputType.name,
               profileFields: true,
+              style: TextStyle(
+                fontSize: 16,
+              ),
+              isDark: isDark,
               controller: nameController),
           defaultTextField(
               textInput: TextInputType.visiblePassword,
+              style: TextStyle(
+                fontSize: 16,
+              ),
               profileFields: true,
+              isDark: isDark,
               controller: passwordController),
           defaultTextField(
               textInput: TextInputType.number,
               profileFields: true,
+              isDark: isDark,
+              style: TextStyle(
+                fontSize: 16,
+              ),
               controller: phoneController),
           defaultTextField(
               textInput: TextInputType.number,
+              style: TextStyle(
+                fontSize: 16,
+              ),
               profileFields: true,
+              isDark: isDark,
               controller: ageController),
           defaultTextField(
               textInput: TextInputType.text,
+              style: TextStyle(
+                fontSize: 16,
+              ),
               profileFields: true,
+              isDark: isDark,
               controller: educationController),
           defaultTextField(
               textInput: TextInputType.text,
+              style: TextStyle(
+                fontSize: 16,
+              ),
+              isDark: isDark,
               profileFields: true,
               controller: residenceController),
         ];
 
         return Scaffold(
-            backgroundColor: Colors.white,
-            appBar:(userModel != null &&  userModel.uId == loggedUserID)
-                ? defaultAppBar(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    toolbarHeight: Adaptive.h(4))
-                : null,
+            backgroundColor: isDark ? HexColor('242527') : Colors.white,
+            appBar: defaultAppBar(
+                backgroundColor: isDark ? HexColor('242527') : Colors.white,
+                toolbarHeight: Adaptive.h(4)),
             body: SingleChildScrollView(
               child: Column(
                 children: [
@@ -104,7 +130,8 @@ class EditProfileScreen extends StatelessWidget {
                                     ),
                                     image: DecorationImage(
                                       image: cubit.coverImagePath == null
-                                          ? NetworkImage(currentUser.coverPhoto!)
+                                          ? NetworkImage(
+                                              currentUser.coverPhoto!)
                                           : FileImage(cubit.coverImagePath!)
                                               as ImageProvider,
                                       fit: BoxFit.cover,
@@ -159,7 +186,8 @@ class EditProfileScreen extends StatelessWidget {
                       state is UploadCoverImageState ||
                       state is UpdateUserLoadingState)
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4),vertical: Adaptive.h(.6)),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: Adaptive.w(4), vertical: Adaptive.h(.6)),
                       child: const LinearProgressIndicator(),
                     ),
                   ListView.separated(

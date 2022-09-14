@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:social_app/components/constants.dart';
 import 'package:social_app/screens/login/login_screen.dart';
 
 import '../components/components.dart';
@@ -26,8 +29,10 @@ class CacheHelper {
   }
 
   static void signOut(context) {
+    loggedUserID = "";
     sharedPreferences!.remove("token").then((value) {
-      navigateAndFinish(context, LoginScreen());
+      Navigator.of(context, rootNavigator: true).pushReplacement(
+          MaterialPageRoute(builder: (context) => LoginScreen()));
     });
   }
 }

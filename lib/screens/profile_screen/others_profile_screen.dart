@@ -16,94 +16,40 @@ import 'package:social_app/models/user_data.dart';
 import 'package:social_app/screens/profile_screen/edit_profile_screen.dart';
 
 import '../../components/components.dart';
+import '../../cubits/theme_manager/theme_cubit.dart';
 import '../posts_screen/create_new_post_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
-  dynamic userModel;
-
-  ProfileScreen({this.userModel});
-
+class OthersProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userCubit = UserCubit.get(context);
     var postsCubit = PostsCubit.get(context);
+    bool isDark = ThemeManagerCubit.get(context).isDark;
 
-    return BlocConsumer<UserCubit, UserStates>(
-      listener: (context, state) {},
+    return BlocConsumer<PostsCubit, PostsStates>(
+      listener: (context, state) {
+        // TODO: implement listener
+      },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: userModel != null
-              ? defaultAppBar(
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                  toolbarHeight: Adaptive.h(4))
-              : null,
+          backgroundColor: isDark ? HexColor('242527') : Colors.white,
+          appBar: defaultAppBar(
+              backgroundColor: isDark ? HexColor('242527') : Colors.white,
+              toolbarHeight: Adaptive.h(4.5)),
           body: ConditionalBuilder(
-            condition: userCubit.gotProfileData,
+            condition: postsCubit.userClickedData != null,
             builder: (context) {
-              var currentUser = UserCubit.get(context).userLogged;
+              var currentUser = postsCubit.userClickedData;
               return SingleChildScrollView(
                 child: Column(
                   children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: Adaptive.w(2), vertical: Adaptive.h(1.5)),
-                      height: Adaptive.h(43),
-                      child: Stack(
-                        alignment: AlignmentDirectional.bottomCenter,
-                        children: [
-                          Align(
-                            alignment: AlignmentDirectional.topCenter,
-                            child: Container(
-                              height: Adaptive.h(30),
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(
-                                      10,
-                                    ),
-                                    topRight: Radius.circular(
-                                      10,
-                                    ),
-                                  ),
-                                  image: DecorationImage(
-                                    image: NetworkImage(userModel != null
-                                        ? userModel!.uId == loggedUserID
-                                            ? currentUser!.coverPhoto.toString()
-                                            : userModel!.coverPhoto!
-                                        : currentUser!.coverPhoto.toString()),
-                                    fit: BoxFit.cover,
-                                  )),
-                            ),
-                          ),
-                          CircleAvatar(
-                              radius: 88.0,
-                              backgroundColor: Colors.white,
-                              child: CircleAvatar(
-                                  radius: 85.0,
-                                  backgroundImage: NetworkImage(
-                                    userModel != null
-                                        ? userModel!.uId == loggedUserID
-                                            ? currentUser!.profilePhoto
-                                                .toString()
-                                            : userModel!.profilePhoto!
-                                        : currentUser!.profilePhoto.toString(),
-                                  ))),
-                        ],
-                      ),
-                    ),
+                    profileData(currentUser: currentUser!),
                     SizedBox(
                       height: Adaptive.h(1),
                     ),
                     defaultText(
-                        text: userModel != null
-                            ? userModel!.uId == loggedUserID
-                                ? currentUser!.name!
-                                : userModel!.name!
-                            : currentUser!.name!,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold),
+                        text: currentUser.name!,
+                        myStyle: Theme.of(context).textTheme.headline2),
                     SizedBox(
                       height: Adaptive.h(2),
                     ),
@@ -123,24 +69,23 @@ class ProfileScreen extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.apartment,
                                       size: 30,
                                     ),
                                     SizedBox(
                                       width: Adaptive.w(1),
                                     ),
-                                    Container(
+                                    SizedBox(
                                         width: Adaptive.w(82),
                                         child: defaultText(
-                                          text: userModel != null
-                                              ? userModel!.uId == loggedUserID
-                                                  ? currentUser!.education!
-                                                  : userModel!.education!
-                                              : currentUser!.education!,
-                                          fontSize: 17,
-                                          textOverflow: TextOverflow.ellipsis,
-                                        )),
+                                            text: currentUser.education!,
+                                            myStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2!
+                                                .copyWith(
+                                                    overflow: TextOverflow
+                                                        .ellipsis))),
                                   ],
                                 ),
                                 SizedBox(
@@ -156,43 +101,23 @@ class ProfileScreen extends StatelessWidget {
                                       width: Adaptive.w(1),
                                     ),
                                     defaultText(
-                                        text: userModel != null
-                                            ? userModel!.uId == loggedUserID
-                                                ? currentUser!.residence!
-                                                : userModel!.residence!
-                                            : currentUser!.residence!,
-                                        fontSize: 17),
+                                        text: currentUser.residence!,
+                                        myStyle: Theme.of(context)
+                                            .textTheme
+                                            .bodyText2!
+                                            .copyWith(
+                                                overflow:
+                                                    TextOverflow.ellipsis)),
                                   ],
                                 ),
                               ],
                             ),
                           ),
-                          if (userModel == null)
-                            SizedBox(
-                              height: Adaptive.h(3),
-                            ),
-                          if (userModel == null )
-                            Center(
-                              child: defaultBtnWithIcon(
-                                txt: 'Edit Profile',
-                                function: () {
-                                  navigateTo(
-                                      context: context,
-                                      nextScreen: EditProfileScreen(
-                                        userModel: userModel,
-                                      ));
-                                },
-                                icon: Icons.edit,
-                                BorderRadValue: 13,
-                              ),
-                            ),
-                          if (userModel == null ||
-                              userModel!.uId == loggedUserID)
+                          if (currentUser.uId == loggedUserID)
                             SizedBox(
                               height: Adaptive.h(5),
                             ),
-                          if (userModel == null ||
-                              userModel!.uId == loggedUserID)
+                          if (currentUser.uId == loggedUserID)
                             Padding(
                               padding: EdgeInsets.symmetric(
                                   horizontal: Adaptive.w(3)),
@@ -203,7 +128,7 @@ class ProfileScreen extends StatelessWidget {
                                     children: [
                                       CircleAvatar(
                                         backgroundImage: NetworkImage(
-                                          currentUser!.profilePhoto!,
+                                          currentUser.profilePhoto!,
                                         ),
                                         radius: 25,
                                       ),
@@ -307,7 +232,7 @@ class ProfileScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Divider(
-                                color: HexColor('c9ccd1'),
+                                color:isDark ? Colors.black : HexColor('c9ccd1'),
                                 thickness: 15,
                               ),
                               Padding(
@@ -320,7 +245,7 @@ class ProfileScreen extends StatelessWidget {
                                     fontSize: 18.5),
                               ),
                               Divider(
-                                color: HexColor('c9ccd1'),
+                                color: isDark ? Colors.black : HexColor('c9ccd1'),
                                 thickness: 15,
                               )
                             ],
@@ -328,49 +253,28 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if(postsCubit.allPosts.isNotEmpty)
-                    BlocConsumer<PostsCubit, PostsStates>(
-                      listener: (context, state) {},
-                      builder: (context, state) {
-                        return ConditionalBuilder(
-                          condition: postsCubit.gotMyPosts && postsCubit.likes.isNotEmpty,
-                          builder: (context) {
-                            return ListView.separated(
-                                shrinkWrap: true,
-                                padding: EdgeInsets.zero,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  return buildPost(
-                                      userModel == null ||
-                                              (userModel != null &&
-                                                  userModel.uId == loggedUserID)
-                                          ? postsCubit.myPosts[index]
-                                          : postsCubit.otherUsersPosts[index],
-                                      postsCubit,
-                                      index,
-                                      context,
-                                      userCubit.userLogged!);
-                                },
-                                separatorBuilder: (context, index) => SizedBox(
-                                      height: Adaptive.h(2),
-                                    ),
-                                itemCount: userModel == null ||
-                                        (userModel != null &&
-                                            userModel.uId == loggedUserID)
-                                    ? postsCubit.myPosts.length
-                                    : postsCubit.otherUsersPosts.length);
+                    if (postsCubit.userClickedPosts.isNotEmpty)
+                      ListView.separated(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return buildPost(
+                                postsCubit.userClickedPosts[index],
+                                postsCubit,
+                                index,
+                                context,
+                                userCubit.userLogged!,isDark);
                           },
-                          fallback: (context) => Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      },
-                    ),
+                          separatorBuilder: (context, index) => SizedBox(
+                                height: Adaptive.h(2),
+                              ),
+                          itemCount: postsCubit.userClickedPosts.length)
                   ],
                 ),
               );
             },
-            fallback: (context) => Center(
+            fallback: (context) => const Center(
               child: CircularProgressIndicator(),
             ),
           ),

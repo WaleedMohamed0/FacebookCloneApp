@@ -3,39 +3,67 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
+import 'package:social_app/cubits/theme_manager/theme_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/network/cache_helper.dart';
 import 'package:social_app/screens/login/login_screen.dart';
+import 'package:social_app/screens/start_up/start_up_screen.dart';
+import 'package:social_app/styles/theme_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+  await CacheHelper.init();
+  loggedUserID = CacheHelper.getData(key: 'token');
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  Widget? screen;
 
   @override
   Widget build(BuildContext context) {
+    if (loggedUserID == null) {
+      screen = LoginScreen();
+    } else {
+      screen = const StartUpScreen();
+    }
     return ResponsiveSizer(
       builder: (p0, p1, p2) {
-        return  MultiBlocProvider(
-          providers:
-          [
-            BlocProvider(create: (context) => UserCubit(),),
-            BlocProvider(create: (context) => PostsCubit()..getAllPosts(),),
-            BlocProvider(create: (context) => ChatsCubit(),),
-
-          ],
-          child: MaterialApp(
-            theme: ThemeData(
-              scaffoldBackgroundColor: HexColor("3b5999"),
-
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => UserCubit()..getUsersData(),
             ),
-            debugShowCheckedModeBanner: false,
-            home: LoginScreen(),
+            BlocProvider(
+              create: (context) => PostsCubit(),
+            ),
+            BlocProvider(
+              create: (context) => ChatsCubit(),
+            ),
+            BlocProvider(
+              create: (context) => ThemeManagerCubit(),
+            ),
+          ],
+          child: BlocConsumer<ThemeManagerCubit, ThemeManagerStates>(
+            listener: (context, state) {
+              // TODO: implement listener
+            },
+            builder: (context, state) {
+              return MaterialApp(
+                theme: lightMode,
+                darkTheme: darkMode,
+                themeMode: ThemeManagerCubit.get(context).isDark
+                    ? ThemeMode.dark
+                    : ThemeMode.light,
+                debugShowCheckedModeBanner: false,
+                home: screen,
+              );
+            },
           ),
         );
       },

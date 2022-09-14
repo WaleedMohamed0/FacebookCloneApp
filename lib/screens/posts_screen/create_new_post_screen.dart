@@ -1,18 +1,20 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/my_flutter_app_icons.dart';
 
 import '../../components/constants.dart';
 import '../../cubits/posts_cubit/posts_states.dart';
-import 'home_screen.dart';
+import '../home_screen/home_screen.dart';
 
 class CreateNewPost extends StatelessWidget {
   const CreateNewPost({Key? key}) : super(key: key);
@@ -22,7 +24,7 @@ class CreateNewPost extends StatelessWidget {
     var postTextController = TextEditingController();
     var postsCubit = PostsCubit.get(context);
     var userCubit = UserCubit.get(context);
-
+    bool isDark = ThemeManagerCubit.get(context).isDark;
     return BlocConsumer<PostsCubit, PostsStates>(
       listener: (context, state) {
         if (state is CreateNewPostSuccessState) {
@@ -38,14 +40,12 @@ class CreateNewPost extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? HexColor('242527') : Colors.white,
           resizeToAvoidBottomInset: false,
           appBar: defaultAppBar(
               title: "Create Post",
-              backgroundColor: Colors.white,
+              backgroundColor:isDark ? HexColor('242527') : Colors.white,
               foregroundColor: Colors.black,
-              textColor: Colors.black,
-              elevation: 0,
               actions: [
                 Padding(
                   padding: EdgeInsets.symmetric(
@@ -121,12 +121,16 @@ class CreateNewPost extends StatelessWidget {
                       ),
                       Expanded(
                         child: TextFormField(
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
                           keyboardType: TextInputType.multiline,
                           maxLines: null,
                           controller: postTextController,
                           decoration: InputDecoration(
                               hintText: 'What\'s on your mind?',
-                              hintStyle: TextStyle(fontSize: 20),
+                              hintStyle: Theme.of(context).textTheme.headline5!.copyWith(fontSize: 20),
                               contentPadding:
                                   EdgeInsets.symmetric(horizontal: 18),
                               border: InputBorder.none),

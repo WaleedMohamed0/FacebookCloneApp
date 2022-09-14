@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:social_app/screens/profile_screen/edit_profile_screen.dart';
 
+import '../models/menu_model.dart';
 import '../models/posts_additions.dart';
 
 const defaultColor = Colors.blue;
@@ -25,3 +27,19 @@ List<String> profileTexts = [
   "Residence"
 ];
 RegExp englishRegex = RegExp("[a-zA-Z]");
+List<MenuModel> menuList = [
+  MenuModel(
+      iconData: Icons.person,
+      text: "Edit Your Profile",
+      screen: EditProfileScreen(),
+      ),
+  MenuModel(
+      iconData: Icons.dark_mode_outlined,
+      text: "Dark Mode",
+      darkMode: true,
+),
+  MenuModel(
+      iconData: Icons.logout,
+      text: "SignOut",
+      signOut: true),
+];

@@ -103,8 +103,8 @@ class ChatsCubit extends Cubit<ChatsStates> {
               senderId: value.docs.last['senderId'],
               text: value.docs.last['text'],
               dateTime:
-                  value.docs.last['dateTime'].toString().substring(12, 17) +
-                      value.docs.last['dateTime'].toString().substring(20)));
+                  value.docs.last['dateTime'].toString().substring(12, 18) +
+                      value.docs.last['dateTime'].toString().substring(21)));
         }
         // to fill list length with users length to avoid errors
         else {

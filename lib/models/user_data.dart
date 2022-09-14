@@ -1,3 +1,5 @@
+import 'package:social_app/components/constants.dart';
+
 class UserModel {
   String email = "";
   String? name;
@@ -26,15 +28,24 @@ class UserModel {
 
   UserModel.fromJson(Map<String, dynamic> json) {
     name = json['name'];
+    uId = json['uId'];
+    // to avoid hackers ^_^
+    if (loggedUserID == json['uId']) {
+      password = json['password'];
+    }
     email = json['email'];
     phone = json['phone'];
-    uId = json['uId'];
-    password = json['password'];
     age = json['age'];
     profilePhoto = json['profilePhoto'];
     coverPhoto = json['coverPhoto'];
     education = json['education'];
     residence = json['residence'];
+  }
+
+  UserModel.fromJsonChats(Map<String, dynamic> json) {
+    name = json['name'];
+    uId = json['uId'];
+    profilePhoto = json['profilePhoto'];
   }
 
   Map<String, dynamic> toMap() {

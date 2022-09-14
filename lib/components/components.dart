@@ -1,18 +1,23 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
+import 'package:social_app/cubits/posts_cubit/posts_states.dart';
+import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
+import 'package:social_app/cubits/theme_manager/theme_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/user_data.dart';
 import 'package:social_app/my_flutter_app_icons.dart';
-import 'package:social_app/screens/posts_screen/comments_screen.dart';
+import 'package:social_app/screens/comments_screen/comments_screen.dart';
 
 import '../models/post_model.dart';
-import '../screens/profile_screen/profile_screen.dart';
+import '../screens/profile_screen/my_profile_screen.dart';
+import '../screens/profile_screen/others_profile_screen.dart';
 import 'constants.dart';
 
 void navigateTo({required context, required nextScreen}) => Navigator.push(
@@ -36,25 +41,28 @@ void navigateAndFinish(context, nextPage) => Navigator.pushAndRemoveUntil(
     MaterialPageRoute(builder: (context) => nextPage),
     (route) => false);
 
-Widget defaultTextField({
-  String? hintText,
-  TextStyle? hintStyle,
-  Widget? prefixIcon,
-  bool isPass = false,
-  IconData? suffix,
-  TextEditingController? controller,
-  required TextInputType textInput,
-  Function()? suffixPressed,
-  Function(String val)? onSubmit,
-  String? Function(String? value)? valid,
-  Color fillColor = Colors.white,
-  int maxLines = 1,
-  bool profileFields = false,
-  double contentPadding = 20,
-  double borderRadius = 10,
-  Function()? onTap
-}) {
+Widget defaultTextField(
+    {String? hintText,
+    TextStyle? hintStyle,
+    Widget? prefixIcon,
+    bool isPass = false,
+    IconData? suffix,
+    TextEditingController? controller,
+    required TextInputType textInput,
+    Function()? suffixPressed,
+    Function(String val)? onSubmit,
+    String? Function(String? value)? valid,
+    Color fillColor = Colors.white,
+    int maxLines = 1,
+    bool profileFields = false,
+    double contentPadding = 20,
+    double borderRadius = 10,
+    TextStyle? style,
+    Color borderColor = Colors.white,
+    Function()? onTap,
+    bool isDark = false}) {
   return TextFormField(
+      style: style,
       maxLines: maxLines,
       textAlignVertical: TextAlignVertical.top,
       keyboardType: textInput,
@@ -74,11 +82,11 @@ Widget defaultTextField({
               filled: true,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(borderRadius),
-                borderSide: BorderSide(color: Colors.white, width: 10),
+                borderSide: BorderSide(color: borderColor, width: 10),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(borderRadius),
-                borderSide: BorderSide(color: Colors.white, width: 10),
+                borderSide: BorderSide(color: borderColor, width: 10),
               ),
               prefixIcon: prefixIcon,
               suffixIcon: IconButton(
@@ -91,65 +99,73 @@ Widget defaultTextField({
             )
           : InputDecoration(
               border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25),
+                borderSide: BorderSide(
+                    color: isDark ? Colors.white : Colors.black, width: 1),
+              )),
       validator: valid);
 }
 
 Widget searchTextField({
   required Function(String searchQuery) onChange,
+  // TextStyle? style,
 }) =>
     TextFormField(
       keyboardType: TextInputType.text,
+      style: TextStyle(color: Colors.black, fontSize: 16),
       onChanged: (String searchQuery) {
         onChange(searchQuery);
       },
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.all(25),
+        contentPadding: EdgeInsets.symmetric(
+            vertical: Adaptive.h(2.5)),
         prefixIcon: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 10, 10, 10),
-          child: Icon(
+          padding: EdgeInsets.fromLTRB(
+              Adaptive.w(5.5), Adaptive.h(1), Adaptive.w(3), Adaptive.h(1)),
+          child: const Icon(
             Icons.search,
           ),
         ),
         hintText: "Search",
-        hintStyle: TextStyle(color: HexColor('979797')),
+        hintStyle: TextStyle(color: HexColor('979797'), fontSize: 16),
         fillColor: HexColor('F8F8F8'),
         filled: true,
         border: InputBorder.none,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.white, width: 10),
+          borderSide: BorderSide(color: Colors.white, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.white, width: 10),
+          borderSide: BorderSide(color: Colors.white, width: 1),
         ),
       ),
     );
 
-Widget defaultText(
-        {required String text,
-        double? fontSize,
-        double? letterSpacing,
-        isUpperCase = false,
-        textColor,
-        double? textHeight,
-        double? wordSpacing,
-        maxLines,
-        TextOverflow? textOverflow,
-        FontStyle? fontStyle,
-        TextStyle? hintStyle,
-        TextAlign? textAlign,
-        FontWeight? fontWeight,
-        String? fontFamily,
-        TextStyle? myStyle,
-        TextDirection? textDirection}) =>
+Widget defaultText({
+  required String text,
+  double? fontSize,
+  double? letterSpacing,
+  isUpperCase = false,
+  textColor,
+  double? textHeight,
+  double? wordSpacing,
+  maxLines,
+  TextOverflow? textOverflow,
+  FontStyle? fontStyle,
+  TextStyle? hintStyle,
+  TextAlign? textAlign,
+  FontWeight? fontWeight,
+  String? fontFamily,
+  TextStyle? myStyle,
+}) =>
     Text(
       isUpperCase ? text.toUpperCase() : text,
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: textAlign,
-      // textDirection:TextDirection.LTR,
       style: myStyle ??
           TextStyle(
               fontFamily: fontFamily,
@@ -246,33 +262,38 @@ Future defaultDialog(
         required text,
         required declineText,
         required acceptText,
+        bool isDark = false,
         required void Function()? declineFn,
         required void Function()? acceptFn}) =>
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
+              backgroundColor: isDark ? HexColor('242527') : Colors.white,
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  defaultText(text: text, fontSize: 18),
+                  defaultText(
+                      text: text,
+                      fontSize: 18,
+                      textColor: isDark ? Colors.white : Colors.black),
                 ],
               ),
               content: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
+                    width: Adaptive.w(27),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: defaultColor,
+                    ),
                     child: TextButton(
                         onPressed: declineFn,
                         child: defaultText(
                             text: declineText,
                             textColor: Colors.white,
                             fontSize: 14.5)),
-                    width: Adaptive.w(27),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: defaultColor,
-                    ),
                   ),
                   Container(
                     width: Adaptive.w(27),
@@ -318,8 +339,8 @@ AppBar defaultAppBar(
         double? toolbarHeight,
         List<Widget>? actions,
         Color foregroundColor = Colors.black,
-        double? elevation,
-          bool centerTitle = false,
+        double elevation =0 ,
+        bool centerTitle = false,
         Color? backgroundColor,
         PreferredSizeWidget? preferredSizeWidget}) =>
     AppBar(
@@ -349,235 +370,333 @@ Future<bool?> defaultToast(
 }
 
 Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
-    UserModel currentUser) {
-  return Padding(
-    padding: EdgeInsets.only(bottom: Adaptive.h(1.5)),
-    child: Card(
-      elevation: 10,
-      child: Column(
-        crossAxisAlignment: englishRegex.hasMatch(post.text)
-            ? CrossAxisAlignment.start
-            : CrossAxisAlignment.end,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: Adaptive.w(2), vertical: Adaptive.h(3)),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    postsCubit.getOtherUsersPosts(uId: post.uId);
-                    navigateToWithAnimation(
-                        context: context,
-                        nextScreen: ProfileScreen(userModel: post),
-                        pageTransitionType: PageTransitionType.rightToLeft);
-                  },
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      post.profilePhoto,
-                    ),
-                    radius: 25,
-                  ),
-                ),
-                SizedBox(
-                  width: Adaptive.w(3),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            postsCubit.getOtherUsersPosts(uId: post.uId);
-                            navigateToWithAnimation(
-                                context: context,
-                                nextScreen: ProfileScreen(userModel: post),
-                                pageTransitionType:
-                                    PageTransitionType.rightToLeft);
-                          },
-                          child: defaultText(
-                              text: post.name,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17),
-                        ),
-                        SizedBox(
-                          width: Adaptive.w(1),
-                        ),
-                        Icon(
-                          Icons.check_circle,
-                          color: Colors.blue,
-                          size: 20,
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: Adaptive.h(.4),
-                    ),
-                    defaultText(text: post.dateTime, textColor: Colors.grey),
-                  ],
-                ),
-                Spacer(),
-                if (post.uId == loggedUserID)
-                  CircleAvatar(
-                    radius: 15,
-                    backgroundColor: Colors.grey[200],
-                    child: defaultIconButton(
-                      icon: Icons.close,
-                      onPressed: () {
-                        defaultDialog(
-                            text: 'Are you sure to remove this post ?',
-                            context: context,
-                            declineText: 'Back',
-                            acceptText: 'Remove',
-                            acceptFn: () {
-                              postsCubit.removePost(
-                                  postId: postsCubit.postsId[postIndex],
-                                  postIndex: postIndex);
-                              Navigator.of(context, rootNavigator: true)
-                                  .pop(context);
-                            },
-                            declineFn: () {
-                              Navigator.of(context, rootNavigator: true)
-                                  .pop(context);
-                            });
-                      },
-                      color: Colors.black,
-                    ),
-                  )
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    UserModel currentUser, isDark) {
+  String time = getTimeDifference(dateTime: post.dateTime);
+  return BlocBuilder<ThemeManagerCubit, ThemeManagerStates>(
+    builder: (context, state) {
+      bool isDark = ThemeManagerCubit.get(context).isDark;
+      return Padding(
+        padding: EdgeInsets.only(bottom: Adaptive.h(1.5)),
+        child: Card(
+          elevation: 10,
+          color: isDark ? HexColor('242527') : Colors.white,
+          child: Column(
+            crossAxisAlignment: englishRegex.hasMatch(post.text)
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.end,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4)),
-                child: defaultText(
-                  text: post.text,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
+                padding: EdgeInsets.symmetric(
+                    horizontal: Adaptive.w(2), vertical: Adaptive.h(3)),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        postsCubit.getUserClickedData(
+                          uId: post.uId,
+                        );
+                        navigateToWithAnimation(
+                            context: context,
+                            nextScreen: OthersProfileScreen(),
+                            pageTransitionType: PageTransitionType.rightToLeft);
+                      },
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          post.profilePhoto,
+                        ),
+                        radius: 25,
+                      ),
+                    ),
+                    SizedBox(
+                      width: Adaptive.w(3),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                postsCubit.getUserClickedData(
+                                  uId: post.uId,
+                                );
+                                navigateToWithAnimation(
+                                    context: context,
+                                    nextScreen: OthersProfileScreen(),
+                                    pageTransitionType:
+                                        PageTransitionType.rightToLeft);
+                              },
+                              child: defaultText(
+                                  text: post.name,
+                                  myStyle:
+                                      Theme.of(context).textTheme.bodyText1),
+                            ),
+                            SizedBox(
+                              width: Adaptive.w(1),
+                            ),
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.blue,
+                              size: 20,
+                            )
+                          ],
+                        ),
+                        SizedBox(
+                          height: Adaptive.h(.4),
+                        ),
+                        defaultText(
+                            text: time,
+                            myStyle: Theme.of(context).textTheme.subtitle2),
+                      ],
+                    ),
+                    const Spacer(),
+                    if (post.uId == loggedUserID)
+                      CircleAvatar(
+                        radius: 15,
+                        backgroundColor:
+                            isDark ? Colors.grey[400] : Colors.grey[200],
+                        child: defaultIconButton(
+                          icon: Icons.close,
+                          onPressed: () {
+                            defaultDialog(
+                                text: 'Are you sure to remove this post ?',
+                                context: context,
+                                declineText: 'Back',
+                                acceptText: 'Remove',
+                                acceptFn: () {
+                                  postsCubit.removePost(
+                                      postId: postsCubit.postsId[postIndex],
+                                      postIndex: postIndex);
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop(context);
+                                },
+                                declineFn: () {
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop(context);
+                                });
+                          },
+                          color: Colors.black,
+                        ),
+                      )
+                  ],
                 ),
               ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4)),
+                    child: defaultText(
+                        text: post.text,
+                        myStyle: Theme.of(context).textTheme.bodyText2),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: Adaptive.h(2),
+              ),
+              if (post.postImage != "")
+                Center(
+                  child: Image.network(
+                    post.postImage,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: Adaptive.w(5), vertical: Adaptive.h(2)),
+                child: Row(
+                  children: [
+                    Icon(myIcons.like),
+                    SizedBox(
+                      width: Adaptive.w(2),
+                    ),
+                    defaultText(
+                        text: '${postsCubit.likes[postIndex]}',
+                        myStyle: Theme.of(context).textTheme.subtitle1),
+                    SizedBox(
+                      width: Adaptive.w(5.5),
+                    ),
+                    // Spacer(),
+                    // defaultText(text: '2 shares')
+                  ],
+                ),
+              ),
+              Divider(
+                color: Colors.grey[600],
+                height: 2,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: Adaptive.w(5.5), vertical: Adaptive.h(1.3)),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: InkWell(
+                        onTap: () {
+                          postsCubit.likePost(
+                              postId: postsCubit.postsId[postIndex],
+                              index: postIndex,
+                              currentUser: currentUser);
+                        },
+                        child: Row(
+                          children: [
+                            Icon(myIcons.like),
+                            SizedBox(
+                              width: Adaptive.w(2.3),
+                            ),
+                            defaultText(
+                                text: 'Like',
+                                myStyle: Theme.of(context).textTheme.subtitle1),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                        child: InkWell(
+                      onTap: () {
+                        postsCubit.getComments(
+                            postId: postsCubit.postsId[postIndex]);
+                        postsCubit.getLikedUsers(
+                            postId: postsCubit.postsId[postIndex],
+                            context: context,
+                            index: postIndex);
+                        navigateToWithAnimation(
+                            context: context,
+                            nextScreen: CommentsScreen(
+                              postId: postsCubit.postsId[postIndex],
+                              postIndex: postIndex,
+                            ),
+                            durationInMilliSecs: 300,
+                            pageTransitionType: PageTransitionType.rightToLeft);
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.chat_bubble_outline),
+                          SizedBox(
+                            width: Adaptive.w(1),
+                          ),
+                          defaultText(
+                              text: 'Comment',
+                              myStyle: Theme.of(context).textTheme.subtitle1),
+                        ],
+                      ),
+                    )),
+                    Flexible(
+                      child: InkWell(
+                        onTap: () {
+                          defaultDialog(
+                              text: 'Are you sure to share this post ?',
+                              context: context,
+                              declineText: 'Back',
+                              acceptText: 'Share Now',
+                              isDark: isDark,
+                              acceptFn: () {
+                                postsCubit.sharePost(
+                                    post: post, currentUser: currentUser);
+                                Navigator.of(context, rootNavigator: true)
+                                    .pop(context);
+                              },
+                              declineFn: () {
+                                Navigator.of(context, rootNavigator: true)
+                                    .pop(context);
+                              });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Icon(Icons.ios_share),
+                            SizedBox(
+                              width: Adaptive.w(1),
+                            ),
+                            defaultText(
+                                text: 'Share',
+                                myStyle: Theme.of(context).textTheme.subtitle1),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
-          SizedBox(
-            height: Adaptive.h(2),
-          ),
-          if (post.postImage != "")
-            Center(
-              child: Image.network(
-                post.postImage,
-                fit: BoxFit.cover,
-              ),
-            ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: Adaptive.w(5), vertical: Adaptive.h(2)),
-            child: Row(
-              children: [
-                Icon(myIcons.like),
-                SizedBox(
-                  width: Adaptive.w(2),
-                ),
-                defaultText(text: '${postsCubit.likes[postIndex]}'),
-                SizedBox(
-                  width: Adaptive.w(5.5),
-                ),
-                // Spacer(),
-                // defaultText(text: '2 shares')
-              ],
-            ),
-          ),
-          Divider(
-            color: Colors.grey[600],
-            height: 2,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: Adaptive.w(5.5), vertical: Adaptive.h(1.3)),
-            child: Row(
-              children: [
-                Flexible(
-                  child: InkWell(
-                    onTap: () {
-                      postsCubit.likePost(
-                          postId: postsCubit.postsId[postIndex],
-                          index: postIndex,
-                          currentUser: currentUser);
-                    },
-                    child: Row(
-                      children: [
-                        Icon(myIcons.like),
-                        SizedBox(
-                          width: Adaptive.w(2.3),
-                        ),
-                        defaultText(text: 'Like'),
-                      ],
-                    ),
+        ),
+      );
+    },
+  );
+}
+
+Widget profileData({required UserModel currentUser}) {
+  return Container(
+    padding: EdgeInsets.symmetric(
+        horizontal: Adaptive.w(2), vertical: Adaptive.h(1.5)),
+    height: Adaptive.h(43),
+    child: Stack(
+      alignment: AlignmentDirectional.bottomCenter,
+      children: [
+        Align(
+          alignment: AlignmentDirectional.topCenter,
+          child: Container(
+            height: Adaptive.h(30),
+            width: double.infinity,
+            decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(
+                    10,
+                  ),
+                  topRight: Radius.circular(
+                    10,
                   ),
                 ),
-                Flexible(
-                    child: InkWell(
-                  onTap: () {
-                    postsCubit.getComments(
-                        postId: postsCubit.postsId[postIndex]);
-                    postsCubit.getLikedUsers(
-                        postId: postsCubit.postsId[postIndex],
-                        context: context,
-                        index: postIndex);
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.chat_bubble_outline),
-                      SizedBox(
-                        width: Adaptive.w(1),
-                      ),
-                      defaultText(text: 'Comment'),
-                    ],
-                  ),
+                image: DecorationImage(
+                  image: NetworkImage(currentUser.coverPhoto.toString()),
+                  fit: BoxFit.cover,
                 )),
-                Flexible(
-                  child: InkWell(
-                    onTap: () {
-                      defaultDialog(
-                          text: 'Are you sure to share this post ?',
-                          context: context,
-                          declineText: 'Back',
-                          acceptText: 'Share Now',
-                          acceptFn: () {
-                            postsCubit.sharePost(
-                                post: post, currentUser: currentUser);
-                            Navigator.of(context, rootNavigator: true)
-                                .pop(context);
-                          },
-                          declineFn: () {
-                            Navigator.of(context, rootNavigator: true)
-                                .pop(context);
-                          });
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Icon(Icons.ios_share),
-                        SizedBox(
-                          width: Adaptive.w(1),
-                        ),
-                        defaultText(text: 'Share'),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
+          ),
+        ),
+        CircleAvatar(
+            radius: 88.0,
+            backgroundColor: Colors.white,
+            child: CircleAvatar(
+                radius: 85.0,
+                backgroundImage: NetworkImage(
+                  currentUser.profilePhoto.toString(),
+                ))),
+      ],
     ),
   );
 }
 
+String getTimeDifference({required String dateTime}) {
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inSeconds == 0) {
+    return 'Just now';
+  }
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes < 1 &&
+      DateTime.now().difference(DateTime.parse(dateTime)).inSeconds > 0) {
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inSeconds} s';
+  }
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes >= 1 &&
+      DateTime.now().difference(DateTime.parse(dateTime)).inHours < 1) {
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inMinutes} m';
+  }
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inHours >= 1) {
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inHours} h';
+  }
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1) {
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inDays} d';
+  }
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1 &&
+      DateTime.now().difference(DateTime.parse(dateTime)).inDays % 7 == 0) {
+    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 7).floor()} w';
+  }
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1 &&
+      DateTime.now().difference(DateTime.parse(dateTime)).inDays % 30 == 0) {
+    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 30).floor()} m';
+  }
+  return '';
+}
 // EmojiPicker emojiSelect({required textEditingController}) {
 //
 //   return EmojiPicker(

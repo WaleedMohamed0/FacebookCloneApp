@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'dart:io' as Io;
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/models/post_model.dart';
+import 'package:social_app/network/cache_helper.dart';
 import 'dart:io';
 import '../../components/constants.dart';
 import '../../models/user_data.dart';
@@ -35,7 +36,9 @@ class UserCubit extends Cubit<UserStates> {
     FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password)
         .then((value) {
+      CacheHelper.saveData(key: 'token', value: value.user!.uid);
       getUsersData(email: email);
+
       emit(LoginSuccessState());
     }).catchError((error) {
       emit(LoginErrorState());
@@ -111,9 +114,10 @@ class UserCubit extends Cubit<UserStates> {
   bool gotProfileData = false;
   List<UserModel> users = [];
 
-  void getUsersData({required String email}) {
+  void getUsersData({String? email}) {
     emit(GetUsersDataLoadingState());
     users = [];
+
     // search in all users data
     FirebaseFirestore.instance.collection('users').get().then((value) {
       for (var element in value.docs) {
@@ -122,11 +126,16 @@ class UserCubit extends Cubit<UserStates> {
           loggedUserID = element['uId'];
           userLogged = UserModel.fromJson(element.data());
         }
+        // to get user' data who already logged in before in cache helper
+        else if (element['uId'] == loggedUserID) {
+          userLogged = UserModel.fromJson(element.data());
+        }
         // to get all users' data
         else {
-          users.add(UserModel.fromJson(element.data()));
+          users.add(UserModel.fromJsonChats(element.data()));
         }
       }
+    }).then((value) {
       gotProfileData = true;
       emit(GetUsersDataSuccessState());
     }).catchError((error) {
@@ -217,6 +226,7 @@ class UserCubit extends Cubit<UserStates> {
     String? residence,
   }) {
     emit(UpdateUserLoadingState());
+
     FirebaseAuth.instance.currentUser!.updatePassword(password!);
     FirebaseFirestore.instance.collection('users').doc(loggedUserID).update({
       'name': name,

@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:social_app/components/constants.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/screens/start_up/start_up_screen.dart';
@@ -17,24 +19,22 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var cubit = UserCubit.get(context);
+    var userCubit = UserCubit.get(context);
     return BlocConsumer<UserCubit, UserStates>(
-      listener: (context, state)
-      {
-        if(state is LoginSuccessState)
-          {
-            defaultToast(msg: "Login Successfully");
-            navigateAndFinish(context, StartUpScreen());
-          }
-        else if(state is LoginErrorState)
-        {
-          defaultToast(msg: "Invalid Email or Password",backgroundColor: Colors.red);
+      listener: (context, state) {
+        if (state is LoginSuccessState) {
+          defaultToast(msg: "Login Successfully");
+          navigateAndFinish(context, StartUpScreen());
+        } else if (state is LoginErrorState) {
+          defaultToast(
+              msg: "Invalid Email or Password", backgroundColor: Colors.red);
         }
       },
       builder: (context, state) {
         return SafeArea(
           child: Scaffold(
-            resizeToAvoidBottomInset:  false,
+            backgroundColor: HexColor('3b5999'),
+            resizeToAvoidBottomInset: false,
             body: Padding(
               padding: const EdgeInsets.all(35.0),
               child: Column(
@@ -50,7 +50,11 @@ class LoginScreen extends StatelessWidget {
                   ),
                   defaultTextField(
                     hintText: 'EmailAddress',
+                    hintStyle: TextStyle(fontSize: 15),
                     controller: emailController,
+                    style: TextStyle(
+                      color: Colors.black,fontSize: 15
+                    ),
                     prefixIcon: Icon(Icons.email_outlined),
                     textInput: TextInputType.emailAddress,
                   ),
@@ -59,15 +63,19 @@ class LoginScreen extends StatelessWidget {
                   ),
                   defaultTextField(
                       hintText: 'Password',
-                      isPass: cubit.isPass,
+                      isPass: userCubit.isPass,
+                      hintStyle: TextStyle(fontSize: 15),
+                      style: TextStyle(
+                        color: Colors.black,fontSize: 15
+                      ),
                       controller: passController,
                       prefixIcon: Icon(Icons.lock_outline),
                       textInput: TextInputType.visiblePassword,
-                      suffix: cubit.isPass
+                      suffix: userCubit.isPass
                           ? Icons.remove_red_eye
                           : Icons.visibility_off_outlined,
                       suffixPressed: () {
-                        cubit.changePasswordVisibility();
+                        userCubit.changePasswordVisibility();
                       }),
                   SizedBox(
                     height: Adaptive.h(4),
@@ -79,7 +87,7 @@ class LoginScreen extends StatelessWidget {
                       txt: 'Login',
                       isUpperCase: true,
                       function: () {
-                        cubit.userLogin(
+                        userCubit.userLogin(
                             email: emailController.text,
                             password: passController.text);
                       },

@@ -35,7 +35,7 @@ class RegisterScreen extends StatelessWidget {
       builder: (context, state) {
         return SafeArea(
           child: Scaffold(
-            // resizeToAvoidBottomInset: false,
+            backgroundColor: HexColor('3b5999'),
             body: Center(
               child: SingleChildScrollView(
                 child: Padding(

@@ -7,6 +7,7 @@ import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
 import 'package:social_app/cubits/chats_cubit/chats_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
+import 'package:social_app/models/chat_model.dart';
 import 'package:social_app/models/user_data.dart';
 
 import '../../components/components.dart';
@@ -87,12 +88,11 @@ class ChatDetails extends StatelessWidget {
                                       if (chatsCubit.messages[index].senderId ==
                                           loggedUserID) {
                                         return buildSenderMessage(
-                                            message: chatsCubit
-                                                .messages[index].text);
+                                            message:
+                                                chatsCubit.messages[index]);
                                       }
                                       return buildReceiverMessage(
-                                          message:
-                                              chatsCubit.messages[index].text);
+                                          message: chatsCubit.messages[index]);
                                     },
                                     separatorBuilder: (context, index) =>
                                         SizedBox(
@@ -129,7 +129,8 @@ class ChatDetails extends StatelessWidget {
                                           chatsCubit.emojiSelect();
                                         },
                                         child: Padding(
-                                          padding: EdgeInsets.only(left: Adaptive.w(2)),
+                                          padding: EdgeInsets.only(
+                                              left: Adaptive.w(2)),
                                           child: Icon(
                                               Icons.emoji_emotions_outlined),
                                         )),
@@ -222,7 +223,7 @@ class ChatDetails extends StatelessWidget {
     );
   }
 
-  Widget buildSenderMessage({required String message}) {
+  Widget buildSenderMessage({required ChatModel message}) {
     return Align(
       alignment: AlignmentDirectional.centerEnd,
       child: Container(
@@ -231,11 +232,25 @@ class ChatDetails extends StatelessWidget {
             color: Colors.blue[300],
             borderRadius: BorderRadius.circular(10),
           ),
-          child: defaultText(text: message)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              defaultText(text: message.text),
+              SizedBox(
+                height: Adaptive.h(.5),
+              ),
+              defaultText(
+                  text: message.dateTime.substring(12, 18) +
+                      message.dateTime.substring(21),
+                  textColor: Colors.grey[600],
+                  fontSize: 11,
+                  textAlign: TextAlign.end)
+            ],
+          )),
     );
   }
 
-  Widget buildReceiverMessage({required String message}) {
+  Widget buildReceiverMessage({required ChatModel message}) {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: Container(
@@ -244,7 +259,21 @@ class ChatDetails extends StatelessWidget {
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(10),
           ),
-          child: defaultText(text: message)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              defaultText(text: message.text),
+              SizedBox(
+                height: Adaptive.h(.5),
+              ),
+              defaultText(
+                  text: message.dateTime.substring(12, 18) +
+                      message.dateTime.substring(21),
+                  textColor: Colors.grey[600],
+                  fontSize: 11,
+                  textAlign: TextAlign.end)
+            ],
+          )),
     );
   }
 }

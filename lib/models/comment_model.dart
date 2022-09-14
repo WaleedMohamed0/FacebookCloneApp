@@ -1,29 +1,18 @@
 class CommentModel {
-  String name = "",
-      uId = "",
-      profilePhoto = "",
-      coverPhoto = "",
-      education = "",
-      residence = "",
-      commentText = "";
+  String name = "", uId = "", profilePhoto = "", commentText = "", dateTime="";
 
   CommentModel(
       {required this.profilePhoto,
       required this.name,
       required this.uId,
-      required this.coverPhoto,
-      required this.education,
-      required this.residence,
-      required this.commentText});
+      required this.commentText,required this.dateTime});
 
   CommentModel.fromJson(Map<String, dynamic> json) {
     profilePhoto = json['profilePhoto'];
     name = json['name'];
     uId = json['uId'];
-    education = json['education'];
-    coverPhoto = json['coverPhoto'];
-    residence = json['residence'];
     commentText = json['comment'];
+    dateTime = json['dateTime'];
   }
 
   Map<String, dynamic> toMap() {
@@ -31,10 +20,8 @@ class CommentModel {
       'name': name,
       'comment': commentText,
       'uId': uId,
-      'education': education,
-      'residence': residence,
       'profilePhoto': profilePhoto,
-      'coverPhoto': coverPhoto,
+      'dateTime': dateTime,
     };
   }
 }

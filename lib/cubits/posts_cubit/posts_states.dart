@@ -16,6 +16,7 @@ class GetMyPostsErrorState extends PostsStates{}
 
 class RemovePostImageSuccessState extends PostsStates{}
 class UploadPostImageLoadingState extends PostsStates{}
+class GotPostImagePathLoadingState extends PostsStates{}
 class GotPostImagePathSuccessState extends PostsStates{}
 
 class RemovePostLoadingState extends PostsStates{}
@@ -37,8 +38,10 @@ class AddNewCommentErrorState extends PostsStates{}
 
 class GotCommentsSuccessState extends PostsStates{}
 class GetPostsLikesSuccessState extends PostsStates{}
-class GetOthersProfileLoadingState extends PostsStates{}
-class GetOthersProfileSuccessState extends PostsStates{}
+class GetUsersPostsLikesSuccessState extends PostsStates{}
+class GetUserDataClickedLoadingState extends PostsStates{}
+class GetUserDataClickedSuccessState extends PostsStates{}
+class GetUserPostsClickedSuccessState extends PostsStates{}
 
 
 class SharePostLoadingState extends PostsStates{}
