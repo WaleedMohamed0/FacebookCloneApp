@@ -1,6 +1,7 @@
 import 'package:conditional_builder/conditional_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
@@ -15,6 +16,8 @@ import 'package:social_app/models/post_model.dart';
 import 'package:social_app/models/user_data.dart';
 import 'package:social_app/screens/chats/chat_details.dart';
 
+import '../../cubits/theme_manager/theme_cubit.dart';
+
 class MessengerScreen extends StatelessWidget {
   const MessengerScreen({Key? key}) : super(key: key);
 
@@ -23,143 +26,133 @@ class MessengerScreen extends StatelessWidget {
     var userCubit = UserCubit.get(context);
     var chatsCubit = ChatsCubit.get(context);
 
-    return ConditionalBuilder(
-      condition: userCubit.userLogged!.profilePhoto != "",
-      builder: (context) {
-        return BlocConsumer<UserCubit, UserStates>(
-          listener: (context, state) {
-            // TODO: implement listener
-          },
-          builder: (context, state) {
-            return Scaffold(
-              // resizeToAvoidBottomInset: false,
-              backgroundColor: Colors.white,
-              appBar: AppBar(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                elevation: 0.0,
-                // titleSpacing: 20.0,
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    if(UserCubit.get(context).userLogged != null &&
-                        UserCubit.get(context).userLogged!.profilePhoto !=
-                            "")
-                    CircleAvatar(
-                      radius: 20.0,
-                      backgroundImage:
-                          NetworkImage(userCubit.userLogged!.profilePhoto!),
-                    ),
-                    SizedBox(
-                      width: 15.0,
-                    ),
-                    defaultText(
-                        text: 'Chats',
-                        textColor: Colors.black,
-                        fontSize: 23,
-                        fontWeight: FontWeight.bold),
-                  ],
-                ),
-                actions: [
+    bool isDark = ThemeManagerCubit.get(context).isDark;
+
+    return BlocConsumer<UserCubit, UserStates>(
+      listener: (context, state) {
+        // TODO: implement listener
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Theme.of(context).backgroundColor,
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).backgroundColor,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                if (UserCubit.get(context).userLogged != null &&
+                    UserCubit.get(context).userLogged!.profilePhoto != "")
                   CircleAvatar(
-                    backgroundColor: Colors.grey[200],
-                    radius: 18,
-                    child: defaultIconButton(
-                      icon: Icons.camera_alt,
-                      size: 21.0,
-                      color: Colors.black,
-                      onPressed: () {},
+                    radius: 20.0,
+                    backgroundImage:
+                        NetworkImage(userCubit.userLogged!.profilePhoto!),
+                  ),
+                SizedBox(
+                  width: Adaptive.w(3),
+                ),
+                defaultText(
+                    text: 'Chats',
+                    myStyle: Theme.of(context).textTheme.headline1),
+              ],
+            ),
+            actions: [
+              CircleAvatar(
+                backgroundColor:
+                    isDark ? HexColor('303030') : HexColor('f5f5f5'),
+                radius: 18,
+                child: defaultIconButton(
+                  icon: Icons.camera_alt,
+                  size: 21.0,
+                  color: Theme.of(context).iconTheme.color!,
+                  onPressed: () {},
+                ),
+              ),
+              SizedBox(
+                width: Adaptive.w(3),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: Adaptive.w(3.6)),
+                child: CircleAvatar(
+                  backgroundColor:
+                      isDark ? HexColor('303030') : HexColor('f5f5f5'),
+                  radius: 18,
+                  child: defaultIconButton(
+                    icon: Icons.edit,
+                    size: 21.0,
+                    color: Theme.of(context).iconTheme.color!,
+                    onPressed: () {},
+                  ),
+                ),
+              ),
+            ],
+          ),
+          body: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: Adaptive.w(4), vertical: Adaptive.h(2.3)),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: Adaptive.w(2.3)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: searchTextField(
+                              onChange: (String searchQuery) {
+                                userCubit.searchMessengerUsers(
+                                    searchQuery: searchQuery);
+                              },
+                              isDark: isDark,context: context),
+                        )
+                      ],
                     ),
                   ),
                   SizedBox(
-                    width: Adaptive.w(3),
+                    height: Adaptive.h(4),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(right: Adaptive.w(3.6)),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey[200],
-                      radius: 18,
-                      child: defaultIconButton(
-                        icon: Icons.edit,
-                        size: 21.0,
-                        color: Colors.black,
-                        onPressed: () {},
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              body: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: Adaptive.w(4), vertical: Adaptive.h(1)),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child:
-                                searchTextField(onChange: (String searchQuery) {
-                              userCubit.searchMessengerUsers(
-                                  searchQuery: searchQuery);
-                            }),
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: Adaptive.h(2),
-                      ),
-                      if (userCubit.users.isNotEmpty &&
-                          state is! SearchMessengerUsersErrorState)
-                        BlocConsumer<ChatsCubit, ChatsStates>(
-                          listener: (context, state) {
-                            // TODO: implement listener
-                          },
-                          builder: (context, state) {
-                            return ConditionalBuilder(
-                              condition: chatsCubit.lastMessages.length ==
-                                  userCubit.users.length,
-                              builder: (context) {
-                                return ListView.separated(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemBuilder: (context, index) {
-                                    return buildChatItem(
-                                        userCubit.searchMessengerList.isEmpty
-                                            ? userCubit.users[index]
-                                            : userCubit
-                                                .searchMessengerList[index],
-                                        context,
-                                        chatsCubit.lastMessages[index]);
-                                  },
-                                  separatorBuilder: (context, index) =>
-                                      SizedBox(
-                                    height: Adaptive.h(2),
-                                  ),
-                                  itemCount: userCubit
-                                          .searchMessengerList.isEmpty
-                                      ? userCubit.users.length
-                                      : userCubit.searchMessengerList.length,
-                                );
+                  if (userCubit.users.isNotEmpty &&
+                      state is! SearchMessengerUsersErrorState)
+                    BlocConsumer<ChatsCubit, ChatsStates>(
+                      listener: (context, state) {
+                        // TODO: implement listener
+                      },
+                      builder: (context, state) {
+                        return ConditionalBuilder(
+                          condition: chatsCubit.lastMessages.length ==
+                              userCubit.users.length,
+                          builder: (context) {
+                            return ListView.separated(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                return buildChatItem(
+                                    userCubit.searchMessengerList.isEmpty
+                                        ? userCubit.users[index]
+                                        : userCubit.searchMessengerList[index],
+                                    context,
+                                    chatsCubit.lastMessages[index]);
                               },
-                              fallback: (context) => Center(
-                                child: CircularProgressIndicator(),
+                              separatorBuilder: (context, index) => SizedBox(
+                                height: Adaptive.h(2),
                               ),
+                              itemCount: userCubit.searchMessengerList.isEmpty
+                                  ? userCubit.users.length
+                                  : userCubit.searchMessengerList.length,
                             );
                           },
-                        )
-                    ],
-                  ),
-                ),
+                          fallback: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    )
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
-      fallback: (context) => Center(
-        child: CircularProgressIndicator(),
-      ),
     );
   }
 
@@ -200,12 +193,11 @@ class MessengerScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 defaultText(
-                  text: model.name!,
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  maxLines: 1,
-                  textOverflow: TextOverflow.ellipsis,
-                ),
+                    text: model.name!,
+                    myStyle: Theme.of(context)
+                        .textTheme
+                        .bodyText1!
+                        .copyWith(overflow: TextOverflow.ellipsis)),
                 SizedBox(
                   height: Adaptive.h(2),
                 ),
@@ -224,6 +216,7 @@ class MessengerScreen extends StatelessWidget {
                     ),
                     defaultText(
                         text: lastMessage.dateTime,
+                        myStyle: Theme.of(context).textTheme.subtitle2,
                         fontWeight: lastMessage.senderId == loggedUserID
                             ? FontWeight.normal
                             : FontWeight.bold),

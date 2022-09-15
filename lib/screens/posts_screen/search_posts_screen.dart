@@ -17,12 +17,8 @@ class SearchPostsScreen extends StatelessWidget {
     bool isDark = ThemeManagerCubit.get(context).isDark;
     postsCubit.searchPostsList.clear();
     return Scaffold(
-      backgroundColor: isDark ? HexColor('242527') : Colors.white,
       appBar: defaultAppBar(
-          backgroundColor: isDark ? HexColor('242527') : Colors.white,
-          foregroundColor: Colors.black,
           title: 'Search Posts',
-          textColor: isDark ? Colors.white:Colors.black,
           centerTitle: true),
       body: BlocConsumer<PostsCubit, PostsStates>(
         listener: (context, state) {
@@ -33,10 +29,10 @@ class SearchPostsScreen extends StatelessWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Adaptive.w(4.5),vertical: Adaptive.h(1.5)),
+                  padding: EdgeInsets.symmetric(horizontal: Adaptive.w(5.2),vertical: Adaptive.h(1.5)),
                   child: searchTextField(onChange: (String searchQuery) {
                     postsCubit.searchPosts(searchQuery: searchQuery);
-                  }),
+                  },context: context,isDark: isDark),
                 ),
                 SizedBox(
                   height: Adaptive.h(2),
@@ -54,7 +50,7 @@ class SearchPostsScreen extends StatelessWidget {
                             context,
                             UserCubit
                                 .get(context)
-                                .userLogged!,false);
+                                .userLogged!);
                       },
                       separatorBuilder: (context, index) =>
                           SizedBox(

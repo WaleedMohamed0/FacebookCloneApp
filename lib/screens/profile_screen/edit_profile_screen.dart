@@ -49,16 +49,14 @@ class EditProfileScreen extends StatelessWidget {
           defaultTextField(
               textInput: TextInputType.name,
               profileFields: true,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              style: Theme.of(context).textTheme.bodyText2!,
+              context: context,
               isDark: isDark,
               controller: nameController),
           defaultTextField(
               textInput: TextInputType.visiblePassword,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              style: Theme.of(context).textTheme.bodyText2!,
+              context: context,
               profileFields: true,
               isDark: isDark,
               controller: passwordController),
@@ -66,41 +64,34 @@ class EditProfileScreen extends StatelessWidget {
               textInput: TextInputType.number,
               profileFields: true,
               isDark: isDark,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              context: context,
+              style: Theme.of(context).textTheme.bodyText2!,
               controller: phoneController),
           defaultTextField(
               textInput: TextInputType.number,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              context: context,
+              style: Theme.of(context).textTheme.bodyText2!,
               profileFields: true,
               isDark: isDark,
               controller: ageController),
           defaultTextField(
               textInput: TextInputType.text,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              context: context,
+              style: Theme.of(context).textTheme.bodyText2!,
               profileFields: true,
               isDark: isDark,
               controller: educationController),
           defaultTextField(
               textInput: TextInputType.text,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              context: context,
+              style: Theme.of(context).textTheme.bodyText2!,
               isDark: isDark,
               profileFields: true,
               controller: residenceController),
         ];
 
         return Scaffold(
-            backgroundColor: isDark ? HexColor('242527') : Colors.white,
-            appBar: defaultAppBar(
-                backgroundColor: isDark ? HexColor('242527') : Colors.white,
-                toolbarHeight: Adaptive.h(4)),
+            appBar: defaultAppBar(toolbarHeight: Adaptive.h(4)),
             body: SingleChildScrollView(
               child: Column(
                 children: [
@@ -176,20 +167,7 @@ class EditProfileScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (state is UploadProfileImageState ||
-                      state is UploadCoverImageState ||
-                      state is UpdateUserLoadingState)
-                    SizedBox(
-                      height: Adaptive.h(.5),
-                    ),
-                  if (state is UploadProfileImageState ||
-                      state is UploadCoverImageState ||
-                      state is UpdateUserLoadingState)
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: Adaptive.w(4), vertical: Adaptive.h(.6)),
-                      child: const LinearProgressIndicator(),
-                    ),
+
                   ListView.separated(
                       shrinkWrap: true,
                       physics: BouncingScrollPhysics(),
@@ -215,6 +193,18 @@ class EditProfileScreen extends StatelessWidget {
                             height: Adaptive.h(1),
                           ),
                       itemCount: profileTexts.length),
+                  if (state is UploadProfileImageState ||
+                      state is UploadCoverImageState ||
+                      state is UpdateUserLoadingState)
+                    SizedBox(height: Adaptive.h(1),),
+                  if (state is UploadProfileImageState ||
+                      state is UploadCoverImageState ||
+                      state is UpdateUserLoadingState)
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: Adaptive.w(4), vertical: Adaptive.h(.6)),
+                      child: const LinearProgressIndicator(),
+                    ),
                   SizedBox(
                     height: Adaptive.h(3),
                   ),

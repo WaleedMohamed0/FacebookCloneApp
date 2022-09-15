@@ -24,20 +24,15 @@ class UsersWhoReactedScreen extends StatelessWidget {
     bool isDark = ThemeManagerCubit.get(context).isDark;
 
     return Scaffold(
-      backgroundColor: isDark ? HexColor('242527') : Colors.white,
       appBar: defaultAppBar(
         title: 'People who reacted',
-        backgroundColor: isDark ? HexColor('242527') : Colors.white,
-        foregroundColor: Colors.black,
-        textColor: isDark ? Colors.white : Colors.black,
-        fontSize: 17,
         leading: defaultIconButton(
             icon: Icons.arrow_back,
             onPressed: () {
               Navigator.pop(context);
             },
-            color: isDark ? Colors.white : Colors.black,
-            size: 30,
+            color: Theme.of(context).iconTheme.color!,
+            size: 28,
             padding: EdgeInsets.only(left: Adaptive.w(2))),
         // to add divider at the end of app bar
         preferredSizeWidget: PreferredSize(
@@ -61,8 +56,7 @@ class UsersWhoReactedScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView.separated(
-                    // controller: scrollController,
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.symmetric(
                         horizontal: Adaptive.w(4), vertical: Adaptive.h(3)),
                     itemBuilder: (context, index) {
@@ -109,16 +103,16 @@ class UsersWhoReactedScreen extends StatelessWidget {
                 ),
                 radius: 34,
               ),
-              CircleAvatar(
+              const CircleAvatar(
                 backgroundColor: Colors.white,
                 radius: 15,
                 child: CircleAvatar(
+                  radius: 13,
                   child: Icon(
                     myIcons.like,
                     color: Colors.white,
                     size: 14,
                   ),
-                  radius: 13,
                 ),
               ),
             ],
@@ -127,7 +121,11 @@ class UsersWhoReactedScreen extends StatelessWidget {
             width: Adaptive.w(3),
           ),
           defaultText(
-              text: model.name, fontWeight: FontWeight.bold, fontSize: 19),
+              text: model.name,
+              myStyle: Theme.of(context)
+                  .textTheme
+                  .bodyText1!
+                  .copyWith(fontSize: 20)),
         ],
       ),
     );

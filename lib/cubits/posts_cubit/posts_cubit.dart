@@ -135,7 +135,10 @@ class PostsCubit extends Cubit<PostsStates> {
         .then((value) {
       allPosts.removeAt(postIndex);
       myPosts.removeAt(postIndex);
-      searchPostsList.removeAt(postIndex);
+      // to clear it if user searched before
+      if(searchPostsList.isNotEmpty) {
+        searchPostsList.removeAt(postIndex);
+      }
       emit(RemovePostSuccessState());
     }).catchError((error) {
       emit(RemovePostErrorState());
@@ -368,9 +371,7 @@ class PostsCubit extends Cubit<PostsStates> {
         name: currentUser.name!,
         uId: loggedUserID,
         profilePhoto: currentUser.profilePhoto!,
-        dateTime: DateFormat('yyyy-MM-dd – h:mm a')
-            .format(DateTime.now())
-            .toString());
+        dateTime: DateTime.now().toIso8601String());
     FirebaseFirestore.instance
         .collection('posts')
         // to add random ID for Each Post

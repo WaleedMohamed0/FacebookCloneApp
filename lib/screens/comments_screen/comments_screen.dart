@@ -36,16 +36,12 @@ class CommentsScreen extends StatelessWidget {
       listener: (context, state) {},
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: isDark ? HexColor('242527') : Colors.white,
           appBar: AppBar(
-            backgroundColor: isDark ? HexColor('242527') : Colors.white,
-            foregroundColor: Colors.black,
-            elevation: 0,
             leading: Padding(
               padding: EdgeInsets.only(left: Adaptive.w(3.6)),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     myIcons.like,
                     color: Colors.blue,
                   ),
@@ -54,7 +50,7 @@ class CommentsScreen extends StatelessWidget {
                   ),
                   defaultText(
                     text: '${postsCubit.likes[postIndex]}',
-                    myStyle: Theme.of(context).textTheme.headline5,
+                    myStyle: Theme.of(context).textTheme.headline5!.copyWith(fontSize: 14),
                   )
                 ],
               ),
@@ -190,10 +186,10 @@ class CommentsScreen extends StatelessWidget {
         InkWell(
           onTap: () {
             PostsCubit.get(context).getUserClickedData(uId: commentData.uId);
-            // navigateToWithAnimation(
-            //     context: context,
-            //     nextScreen: ProfileScreen(userModel: commentData),
-            //     pageTransitionType: PageTransitionType.rightToLeft);
+            navigateToWithAnimation(
+                context: context,
+                nextScreen: OthersProfileScreen(),
+                pageTransitionType: PageTransitionType.rightToLeft);
           },
           child: CircleAvatar(
             backgroundImage: NetworkImage(
@@ -254,7 +250,7 @@ class CommentsScreen extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.only(left: Adaptive.w(3)),
-              child: defaultText(text: time, textColor: Colors.grey[600]),
+              child: defaultText(text: time,myStyle: Theme.of(context).textTheme.subtitle2),
             )
           ],
         ),

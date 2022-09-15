@@ -13,7 +13,7 @@ String defaultFemaleProfilePhoto =
     'https://images.assetsdelivery.com/compings_v2/thesomeday123/thesomeday1231712/thesomeday123171200008.jpg';
 String defaultCoverPhoto = 'https://wallpaperaccess.com/full/1690371.jpg';
 List<PostsAddition> postsAdditionList = [
-  PostsAddition(iconData: Icons.live_tv, iconColor: Colors.red, text: 'Live'),
+  PostsAddition(iconData: Icons.live_tv, iconColor: Colors.red, text: 'Live',),
   PostsAddition(iconData: Icons.photo, iconColor: Colors.green, text: 'Photo'),
   PostsAddition(
       iconData: Icons.flag, iconColor: Colors.indigo, text: 'Life event'),

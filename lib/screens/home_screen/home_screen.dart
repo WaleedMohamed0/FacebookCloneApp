@@ -27,14 +27,20 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var postsCubit = PostsCubit.get(context);
     var userCubit = UserCubit.get(context);
-    bool isDark =
-        ThemeManagerCubit.get(context).isDark;
+    bool isDark = ThemeManagerCubit
+        .get(context)
+        .isDark;
     return BlocConsumer<PostsCubit, PostsStates>(
       listener: (context, state) {
         if (state is SharePostSuccessState) {
           defaultToast(msg: 'You Shared this Post');
           postsCubit.getAllPosts();
         }
+        else if (state is RemovePostSuccessState)
+          {
+            defaultToast(msg: 'Post Deleted');
+            postsCubit.getAllPosts();
+          }
       },
       builder: (context, state) {
         return Scaffold(
@@ -53,38 +59,41 @@ class HomeScreen extends StatelessWidget {
                     builder: (context, state) {
                       return Row(
                         children: [
-                          UserCubit.get(context).userLogged != null &&
-                                  UserCubit.get(context)
-                                          .userLogged!
-                                          .profilePhoto !=
-                                      ""
+                          UserCubit
+                              .get(context)
+                              .userLogged != null &&
+                              UserCubit
+                                  .get(context)
+                                  .userLogged!
+                                  .profilePhoto !=
+                                  ""
                               ? Padding(
-                                  padding: EdgeInsets.only(left: Adaptive.w(2)),
-                                  child: InkWell(
-                                    onTap: () {
-                                      // navigateToWithAnimation(
-                                      //     context: context,
-                                      //     nextScreen: ProfileScreen(
-                                      //         userModel: userCubit.userLogged),
-                                      //     pageTransitionType:
-                                      //         PageTransitionType.rightToLeft);
-                                    },
-                                    child: CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                        UserCubit.get(context)
-                                            .userLogged!
-                                            .profilePhoto!,
-                                      ),
-                                      radius: 25,
-                                    ),
-                                  ),
-                                )
-                              : Padding(
-                                  padding: EdgeInsets.only(left: Adaptive.w(2)),
-                                  child: const CircleAvatar(
-                                    radius: 25,
-                                  ),
+                            padding: EdgeInsets.only(left: Adaptive.w(2)),
+                            child: InkWell(
+                              onTap: () {
+                                navigateToWithAnimation(
+                                    context: context,
+                                    nextScreen: MyProfileScreen(appBar: true,),
+                                    pageTransitionType:
+                                    PageTransitionType.rightToLeft);
+                              },
+                              child: CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  UserCubit
+                                      .get(context)
+                                      .userLogged!
+                                      .profilePhoto!,
                                 ),
+                                radius: 25,
+                              ),
+                            ),
+                          )
+                              : Padding(
+                            padding: EdgeInsets.only(left: Adaptive.w(2)),
+                            child: const CircleAvatar(
+                              radius: 25,
+                            ),
+                          ),
                           SizedBox(
                             width: Adaptive.w(3),
                           ),
@@ -99,20 +108,22 @@ class HomeScreen extends StatelessWidget {
                                       PageTransitionType.bottomToTop);
                                 },
                                 decoration: InputDecoration(
-                                    hintStyle: TextStyle(
-                                        fontSize: 15,
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black87),
+                                    hintStyle: Theme
+                                        .of(context)
+                                        .textTheme
+                                        .headline5,
                                     hintText: 'What\'s on your mind?',
                                     contentPadding:
-                                    EdgeInsets.symmetric(horizontal: 18),
+                                    const EdgeInsets.symmetric(horizontal: 18),
                                     border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(25)),
+                                        borderRadius: BorderRadius.circular(
+                                            25)),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(25),
                                       borderSide: BorderSide(
-                                          color:isDark ? Colors.white:Colors.grey, width: 1),
+                                          color:
+                                          isDark ? Colors.white : Colors.grey,
+                                          width: 1),
                                     )),
                               )),
                           Padding(
@@ -126,7 +137,7 @@ class HomeScreen extends StatelessWidget {
                                     context: context,
                                     nextScreen: CreateNewPost(),
                                     pageTransitionType:
-                                        PageTransitionType.bottomToTop);
+                                    PageTransitionType.bottomToTop);
                               },
                             ),
                           )
@@ -146,23 +157,26 @@ class HomeScreen extends StatelessWidget {
                         return ListView.separated(
                             shrinkWrap: true,
                             padding: EdgeInsets.zero,
-                            physics: NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             itemBuilder: (context, index) {
                               return buildPost(
-                                  postsCubit.allPosts[index],
-                                  postsCubit,
-                                  index,
-                                  context,
-                                  userCubit.userLogged!,isDark);
+                                postsCubit.allPosts[index],
+                                postsCubit,
+                                index,
+                                context,
+                                userCubit.userLogged!,
+                              );
                             },
-                            separatorBuilder: (context, index) => SizedBox(
+                            separatorBuilder: (context, index) =>
+                                SizedBox(
                                   height: Adaptive.h(2),
                                 ),
                             itemCount: postsCubit.allPosts.length);
                       },
-                      fallback: (context) => Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      fallback: (context) =>
+                          Center(
+                            child: CircularProgressIndicator(),
+                          ),
                     ),
                 ],
               ),

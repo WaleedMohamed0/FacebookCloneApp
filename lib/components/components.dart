@@ -57,9 +57,10 @@ Widget defaultTextField(
     bool profileFields = false,
     double contentPadding = 20,
     double borderRadius = 10,
-    TextStyle? style,
+    TextStyle style = const TextStyle(color: Colors.black, fontSize: 15),
     Color borderColor = Colors.white,
     Function()? onTap,
+    BuildContext? context,
     bool isDark = false}) {
   return TextFormField(
       style: style,
@@ -98,48 +99,55 @@ Widget defaultTextField(
               ),
             )
           : InputDecoration(
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(25),
                 borderSide: BorderSide(
-                    color: isDark ? Colors.white : Colors.black, width: 1),
+                    color: Theme.of(context!).iconTheme.color!, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25),
+                borderSide: BorderSide(
+                    color: Theme.of(context!).iconTheme.color!, width: 1),
               )),
       validator: valid);
 }
 
 Widget searchTextField({
   required Function(String searchQuery) onChange,
-  // TextStyle? style,
+  bool isDark = false,
+  context
 }) =>
     TextFormField(
       keyboardType: TextInputType.text,
-      style: TextStyle(color: Colors.black, fontSize: 16),
+      style: Theme.of(context).textTheme.bodyText2,
       onChanged: (String searchQuery) {
         onChange(searchQuery);
       },
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.symmetric(
-            vertical: Adaptive.h(2.5)),
+        contentPadding: EdgeInsets.symmetric(vertical: Adaptive.h(2)),
         prefixIcon: Padding(
           padding: EdgeInsets.fromLTRB(
               Adaptive.w(5.5), Adaptive.h(1), Adaptive.w(3), Adaptive.h(1)),
-          child: const Icon(
+          child: Icon(
             Icons.search,
+            color: Theme.of(context).iconTheme.color,
           ),
         ),
         hintText: "Search",
         hintStyle: TextStyle(color: HexColor('979797'), fontSize: 16),
-        fillColor: HexColor('F8F8F8'),
+        fillColor: isDark ? HexColor('303030') : HexColor('f5f5f5'),
         filled: true,
-        border: InputBorder.none,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.white, width: 1),
+          borderSide: BorderSide(color: Colors.transparent, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.white, width: 1),
+          borderSide: BorderSide(color: Colors.transparent, width: 1),
         ),
       ),
     );
@@ -262,21 +270,20 @@ Future defaultDialog(
         required text,
         required declineText,
         required acceptText,
-        bool isDark = false,
         required void Function()? declineFn,
         required void Function()? acceptFn}) =>
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-              backgroundColor: isDark ? HexColor('242527') : Colors.white,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   defaultText(
                       text: text,
                       fontSize: 18,
-                      textColor: isDark ? Colors.white : Colors.black),
+                      textColor: Theme.of(context).textTheme.bodyText2!.color),
                 ],
               ),
               content: Row(
@@ -333,18 +340,15 @@ Widget defaultIconButton(
 AppBar defaultAppBar(
         {String title = "",
         FontWeight? fontWeight = FontWeight.w600,
-        Color textColor = Colors.white,
         Widget? leading,
         double? fontSize,
         double? toolbarHeight,
         List<Widget>? actions,
-        Color foregroundColor = Colors.black,
-        double elevation =0 ,
+        double elevation = 0,
         bool centerTitle = false,
         Color? backgroundColor,
         PreferredSizeWidget? preferredSizeWidget}) =>
     AppBar(
-      foregroundColor: foregroundColor,
       leadingWidth: 30,
       backgroundColor: backgroundColor,
       toolbarHeight: toolbarHeight,
@@ -354,10 +358,8 @@ AppBar defaultAppBar(
       bottom: preferredSizeWidget,
       centerTitle: centerTitle,
       title: defaultText(
-          text: title,
-          fontWeight: fontWeight,
-          textColor: textColor,
-          fontSize: fontSize),
+        text: title,
+      ),
     );
 
 Future<bool?> defaultToast(
@@ -370,7 +372,7 @@ Future<bool?> defaultToast(
 }
 
 Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
-    UserModel currentUser, isDark) {
+    UserModel currentUser) {
   String time = getTimeDifference(dateTime: post.dateTime);
   return BlocBuilder<ThemeManagerCubit, ThemeManagerStates>(
     builder: (context, state) {
@@ -378,8 +380,11 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
       return Padding(
         padding: EdgeInsets.only(bottom: Adaptive.h(1.5)),
         child: Card(
-          elevation: 10,
-          color: isDark ? HexColor('242527') : Colors.white,
+          shape: RoundedRectangleBorder(
+              side: BorderSide(
+                  color: isDark ? Colors.grey[800]! : Colors.grey[300]!)),
+          elevation: 6,
+          color: Theme.of(context).scaffoldBackgroundColor,
           child: Column(
             crossAxisAlignment: englishRegex.hasMatch(post.text)
                 ? CrossAxisAlignment.start
@@ -443,11 +448,19 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                           ],
                         ),
                         SizedBox(
-                          height: Adaptive.h(.4),
+                          height: Adaptive.h(.6),
                         ),
-                        defaultText(
-                            text: time,
-                            myStyle: Theme.of(context).textTheme.subtitle2),
+                        Row(
+                          children: [
+                            defaultText(
+                                text: time,
+                                myStyle: Theme.of(context).textTheme.subtitle2),
+                            SizedBox(width: Adaptive.w(2),),
+                            CircleAvatar(radius: 3,),
+                            SizedBox(width: Adaptive.w(1),),
+                            Icon(Icons.public,size: 18,),
+                          ],
+                        ),
                       ],
                     ),
                     const Spacer(),
@@ -508,7 +521,7 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                     horizontal: Adaptive.w(5), vertical: Adaptive.h(2)),
                 child: Row(
                   children: [
-                    Icon(myIcons.like),
+                    const Icon(myIcons.like),
                     SizedBox(
                       width: Adaptive.w(2),
                     ),
@@ -591,7 +604,6 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                               context: context,
                               declineText: 'Back',
                               acceptText: 'Share Now',
-                              isDark: isDark,
                               acceptFn: () {
                                 postsCubit.sharePost(
                                     post: post, currentUser: currentUser);
@@ -606,7 +618,7 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Icon(Icons.ios_share),
+                            const Icon(Icons.ios_share),
                             SizedBox(
                               width: Adaptive.w(1),
                             ),
@@ -675,25 +687,26 @@ String getTimeDifference({required String dateTime}) {
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes < 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inSeconds > 0) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inSeconds} s';
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inSeconds}s';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes >= 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inHours < 1) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inMinutes} m';
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inMinutes}m';
   }
-  if (DateTime.now().difference(DateTime.parse(dateTime)).inHours >= 1) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inHours} h';
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inHours >= 1 &&
+      DateTime.now().difference(DateTime.parse(dateTime)).inDays < 1) {
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inHours}h';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inDays} d';
+    return '${DateTime.now().difference(DateTime.parse(dateTime)).inDays}d';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inDays % 7 == 0) {
-    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 7).floor()} w';
+    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 7).floor()}w';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inDays % 30 == 0) {
-    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 30).floor()} m';
+    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 30).floor()}m';
   }
   return '';
 }

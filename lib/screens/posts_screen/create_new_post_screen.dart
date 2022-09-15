@@ -1,20 +1,14 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hexcolor/hexcolor.dart';
-import 'package:page_transition/page_transition.dart';
+
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
-import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
-import 'package:social_app/cubits/user_cubit/user_states.dart';
-import 'package:social_app/my_flutter_app_icons.dart';
 
-import '../../components/constants.dart';
 import '../../cubits/posts_cubit/posts_states.dart';
-import '../home_screen/home_screen.dart';
 
 class CreateNewPost extends StatelessWidget {
   const CreateNewPost({Key? key}) : super(key: key);
@@ -24,12 +18,11 @@ class CreateNewPost extends StatelessWidget {
     var postTextController = TextEditingController();
     var postsCubit = PostsCubit.get(context);
     var userCubit = UserCubit.get(context);
-    bool isDark = ThemeManagerCubit.get(context).isDark;
+
     return BlocConsumer<PostsCubit, PostsStates>(
       listener: (context, state) {
         if (state is CreateNewPostSuccessState) {
           defaultToast(msg: "Post Added Successfully");
-
           postsCubit.getAllPosts().then((value) {
             Navigator.pop(context);
           });
@@ -40,35 +33,30 @@ class CreateNewPost extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: isDark ? HexColor('242527') : Colors.white,
           resizeToAvoidBottomInset: false,
-          appBar: defaultAppBar(
-              title: "Create Post",
-              backgroundColor:isDark ? HexColor('242527') : Colors.white,
-              foregroundColor: Colors.black,
-              actions: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: Adaptive.w(2.8), vertical: Adaptive.h(1.3)),
-                  child: defaultBtn(
-                      txt: "POST",
-                      function: () {
-                        if (postsCubit.postImagePath != null) {
-                          postsCubit.uploadPostImage(
-                              text: postTextController.text,
-                              currentUser: userCubit.userLogged!);
-                        } else {
-                          postsCubit.createNewPost(
-                              text: postTextController.text,
-                              currentUser: userCubit.userLogged!);
-                        }
-                      },
-                      width: 80,
-                      borderRadius: 7,
-                      fontSize: 15,
-                      borderWidth: 0),
-                )
-              ]),
+          appBar: defaultAppBar(title: "Create Post", actions: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: Adaptive.w(2.8), vertical: Adaptive.h(1.3)),
+              child: defaultBtn(
+                  txt: "POST",
+                  function: () {
+                    if (postsCubit.postImagePath != null) {
+                      postsCubit.uploadPostImage(
+                          text: postTextController.text,
+                          currentUser: userCubit.userLogged!);
+                    } else {
+                      postsCubit.createNewPost(
+                          text: postTextController.text,
+                          currentUser: userCubit.userLogged!);
+                    }
+                  },
+                  width: 80,
+                  borderRadius: 7,
+                  fontSize: 15,
+                  borderWidth: 0),
+            )
+          ]),
           body: CustomScrollView(
             slivers: [
               SliverFillRemaining(
@@ -91,7 +79,7 @@ class CreateNewPost extends StatelessWidget {
                         Padding(
                           padding:
                               EdgeInsets.symmetric(horizontal: Adaptive.w(3)),
-                          child: LinearProgressIndicator(),
+                          child: const LinearProgressIndicator(),
                         ),
                       if (state is CreateNewPostLoadingState ||
                           state is UploadPostImageLoadingState)
@@ -112,8 +100,10 @@ class CreateNewPost extends StatelessWidget {
                           ),
                           defaultText(
                               text: userCubit.userLogged!.name!,
-                              fontSize: 22.5,
-                              fontWeight: FontWeight.bold),
+                              myStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1!
+                                  .copyWith(fontSize: 22.5)),
                         ],
                       ),
                       SizedBox(
@@ -121,18 +111,18 @@ class CreateNewPost extends StatelessWidget {
                       ),
                       Expanded(
                         child: TextFormField(
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
+                          style: Theme.of(context).textTheme.bodyText2,
                           keyboardType: TextInputType.multiline,
                           maxLines: null,
                           controller: postTextController,
                           decoration: InputDecoration(
                               hintText: 'What\'s on your mind?',
-                              hintStyle: Theme.of(context).textTheme.headline5!.copyWith(fontSize: 20),
+                              hintStyle: Theme.of(context)
+                                  .textTheme
+                                  .headline5!
+                                  .copyWith(fontSize: 20),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 18),
+                                  const EdgeInsets.symmetric(horizontal: 18),
                               border: InputBorder.none),
                         ),
                       ),
@@ -177,7 +167,7 @@ class CreateNewPost extends StatelessWidget {
                           children: [
                             Padding(
                               padding: EdgeInsets.only(left: Adaptive.w(1)),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.image,
                                 color: Colors.green,
                                 size: 35,
@@ -186,7 +176,9 @@ class CreateNewPost extends StatelessWidget {
                             SizedBox(
                               width: Adaptive.w(1),
                             ),
-                            defaultText(text: "Photo", fontSize: 20)
+                            defaultText(
+                                text: "Photo",
+                                myStyle: Theme.of(context).textTheme.bodyText1)
                           ],
                         ),
                       ),

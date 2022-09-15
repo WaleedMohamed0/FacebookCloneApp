@@ -105,7 +105,7 @@ class _StartUpScreenState extends State<StartUpScreen>
                           },
                           icon: Icon(
                             Icons.search,
-                            color: isDark ? Colors.white : Colors.black,
+                            color: Theme.of(context).iconTheme.color,
                             size: 27,
                           ),
                         ),
@@ -139,7 +139,7 @@ class _StartUpScreenState extends State<StartUpScreen>
                         ),
                       ),
                     ],
-                    backgroundColor: isDark ? HexColor('242527') : Colors.white,
+                    backgroundColor:Theme.of(context).scaffoldBackgroundColor,
                     bottom: TabBar(
                         indicator: UnderlineTabIndicator(
                             borderSide: const BorderSide(width: 3.0),
@@ -155,7 +155,7 @@ class _StartUpScreenState extends State<StartUpScreen>
                     controller: tabController,
                     children: [
                       MaterialApp(
-                        home: HomeScreen(),
+                        home: const HomeScreen(),
                         theme: lightMode,
                         darkTheme: darkMode,
                         themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
@@ -169,14 +169,14 @@ class _StartUpScreenState extends State<StartUpScreen>
                         debugShowCheckedModeBanner: false,
                       ),
                       MaterialApp(
-                        home: NotificationsScreen(),
+                        home: const NotificationsScreen(),
                         theme: lightMode,
                         darkTheme: darkMode,
                         themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
                         debugShowCheckedModeBanner: false,
                       ),
                       MaterialApp(
-                        home: MenuScreen(),
+                        home: const MenuScreen(),
                         theme: lightMode,
                         darkTheme: darkMode,
                         themeMode: isDark ? ThemeMode.dark : ThemeMode.light,

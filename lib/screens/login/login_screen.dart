@@ -52,9 +52,7 @@ class LoginScreen extends StatelessWidget {
                     hintText: 'EmailAddress',
                     hintStyle: TextStyle(fontSize: 15),
                     controller: emailController,
-                    style: TextStyle(
-                      color: Colors.black,fontSize: 15
-                    ),
+
                     prefixIcon: Icon(Icons.email_outlined),
                     textInput: TextInputType.emailAddress,
                   ),
@@ -65,9 +63,9 @@ class LoginScreen extends StatelessWidget {
                       hintText: 'Password',
                       isPass: userCubit.isPass,
                       hintStyle: TextStyle(fontSize: 15),
-                      style: TextStyle(
-                        color: Colors.black,fontSize: 15
-                      ),
+                      // style: TextStyle(
+                      //   color: Colors.black,fontSize: 15
+                      // ),
                       controller: passController,
                       prefixIcon: Icon(Icons.lock_outline),
                       textInput: TextInputType.visiblePassword,

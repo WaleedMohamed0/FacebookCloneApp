@@ -32,9 +32,7 @@ class OthersProfileScreen extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: isDark ? HexColor('242527') : Colors.white,
           appBar: defaultAppBar(
-              backgroundColor: isDark ? HexColor('242527') : Colors.white,
               toolbarHeight: Adaptive.h(4.5)),
           body: ConditionalBuilder(
             condition: postsCubit.userClickedData != null,
@@ -148,6 +146,7 @@ class OthersProfileScreen extends StatelessWidget {
                                           },
                                           decoration: InputDecoration(
                                               hintText: 'What\'s on your mind?',
+                                              hintStyle: Theme.of(context).textTheme.headline5,
                                               border: InputBorder.none),
                                         ),
                                       ),
@@ -264,7 +263,7 @@ class OthersProfileScreen extends StatelessWidget {
                                 postsCubit,
                                 index,
                                 context,
-                                userCubit.userLogged!,isDark);
+                                userCubit.userLogged!);
                           },
                           separatorBuilder: (context, index) => SizedBox(
                                 height: Adaptive.h(2),

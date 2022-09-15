@@ -58,7 +58,6 @@ class ChatsCubit extends Cubit<ChatsStates> {
   List<ChatModel> messages = [];
 
   void getMessages({required String receiverId}) {
-    // print(receiverId);
     FirebaseFirestore.instance
         .collection('users')
         .doc(loggedUserID)
@@ -71,10 +70,16 @@ class ChatsCubit extends Cubit<ChatsStates> {
       messages.clear();
       for (var element in event.docs) {
         messages.add(ChatModel(
-            receiverId: receiverId,
-            senderId: element.data()['senderId'],
-            text: element.data()['text'],
-            dateTime: element.data()['dateTime']));
+          receiverId: receiverId,
+          senderId: element['senderId'],
+          text: element['text'],
+          // to get time without date
+          dateTime: element['dateTime']
+                  .substring(13, element['dateTime'][14] == ":" ? 17 : 18) +
+              " " +
+              element['dateTime']
+                  .substring(element['dateTime'][21] == " " ? 22 : 21),
+        ));
       }
 
       emit(GetMessagesSuccessState());
@@ -103,8 +108,7 @@ class ChatsCubit extends Cubit<ChatsStates> {
               senderId: value.docs.last['senderId'],
               text: value.docs.last['text'],
               dateTime:
-                  value.docs.last['dateTime'].toString().substring(12, 18) +
-                      value.docs.last['dateTime'].toString().substring(21)));
+                  "${value.docs.last['dateTime'].toString().substring(12, value.docs.last['dateTime'][14] == ":" ? 17 : 18)} ${value.docs.last['dateTime'].toString().substring(21)}"));
         }
         // to fill list length with users length to avoid errors
         else {
@@ -117,11 +121,10 @@ class ChatsCubit extends Cubit<ChatsStates> {
     }
   }
 
-  bool emojiShow=true;
-  void emojiSelect()
-  {
+  bool emojiShow = true;
+
+  void emojiSelect() {
     emojiShow = !emojiShow;
     emit(EmojySelectState());
   }
-
 }

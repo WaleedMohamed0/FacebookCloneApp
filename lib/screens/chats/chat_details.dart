@@ -2,6 +2,7 @@ import 'package:conditional_builder/conditional_builder.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
@@ -39,12 +40,9 @@ class ChatDetails extends StatelessWidget {
             return false;
           },
           child: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).backgroundColor,
             appBar: AppBar(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              elevation: 0.0,
-              // titleSpacing: 20.0,
+              backgroundColor: Theme.of(context).backgroundColor,
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -53,13 +51,14 @@ class ChatDetails extends StatelessWidget {
                     backgroundImage: NetworkImage(model!.profilePhoto!),
                   ),
                   SizedBox(
-                    width: 15.0,
+                    width: Adaptive.w(3.5),
                   ),
                   defaultText(
                       text: model!.name!,
-                      textColor: Colors.black,
-                      fontSize: 23,
-                      fontWeight: FontWeight.bold),
+                      myStyle: Theme.of(context)
+                          .textTheme
+                          .headline1!
+                          .copyWith(overflow: TextOverflow.ellipsis)),
                 ],
               ),
             ),
@@ -88,11 +87,12 @@ class ChatDetails extends StatelessWidget {
                                       if (chatsCubit.messages[index].senderId ==
                                           loggedUserID) {
                                         return buildSenderMessage(
-                                            message:
-                                                chatsCubit.messages[index]);
+                                            message: chatsCubit.messages[index],
+                                            context: context);
                                       }
                                       return buildReceiverMessage(
-                                          message: chatsCubit.messages[index]);
+                                          message: chatsCubit.messages[index],
+                                          context: context);
                                     },
                                     separatorBuilder: (context, index) =>
                                         SizedBox(
@@ -101,26 +101,28 @@ class ChatDetails extends StatelessWidget {
                                     itemCount: chatsCubit.messages.length),
                               ),
                             ),
-                          if (chatsCubit.messages.isEmpty) Spacer(),
+
+                          if (chatsCubit.messages.isEmpty) const Spacer(),
                           Row(
                             children: [
                               Container(
-                                width: Adaptive.w(82),
+                                width: Adaptive.w(80),
                                 padding: EdgeInsets.zero,
                                 child: defaultTextField(
                                     textInput: TextInputType.text,
                                     borderRadius: 33,
+                                    borderColor: Colors.grey[100]!,
                                     fillColor: Colors.grey[100]!,
                                     hintText: "Message",
                                     onTap: () {
-                                      // off emojis if keyboard is on
+                                      // close emojis if keyboard is on
                                       if (!chatsCubit.emojiShow) {
                                         chatsCubit.emojiSelect();
                                       }
                                     },
                                     prefixIcon: InkWell(
                                         onTap: () {
-                                          // on emojis and close keyboard
+                                          // open emojis and close keyboard
                                           FocusScopeNode currentFocus =
                                               FocusScope.of(context);
                                           if (!currentFocus.hasPrimaryFocus) {
@@ -130,15 +132,15 @@ class ChatDetails extends StatelessWidget {
                                         },
                                         child: Padding(
                                           padding: EdgeInsets.only(
-                                              left: Adaptive.w(2)),
-                                          child: Icon(
+                                              left: Adaptive.w(2.2)),
+                                          child: const Icon(
                                               Icons.emoji_emotions_outlined),
                                         )),
                                     controller: messageController,
-                                    contentPadding: 24),
+                                    contentPadding: 17),
                               ),
                               SizedBox(
-                                width: Adaptive.w(1),
+                                width: Adaptive.w(3),
                               ),
                               defaultIconButton(
                                 icon: Icons.send_sharp,
@@ -169,6 +171,7 @@ class ChatDetails extends StatelessWidget {
                               ),
                             ],
                           ),
+                          // Emojis Tab
                           Offstage(
                             offstage: chatsCubit.emojiShow,
                             child: SizedBox(
@@ -177,14 +180,14 @@ class ChatDetails extends StatelessWidget {
                                 textEditingController: messageController,
                                 onEmojiSelected:
                                     (Category category, Emoji emoji) {},
-                                config: Config(
+                                config: const Config(
                                   columns: 7,
                                   emojiSizeMax: 32,
                                   verticalSpacing: 0,
                                   horizontalSpacing: 0,
                                   gridPadding: EdgeInsets.zero,
                                   initCategory: Category.RECENT,
-                                  bgColor: const Color(0xFFF2F2F2),
+                                  bgColor: Color(0xFFF2F2F2),
                                   indicatorColor: defaultColor,
                                   iconColor: Colors.grey,
                                   iconColorSelected: defaultColor,
@@ -196,7 +199,7 @@ class ChatDetails extends StatelessWidget {
                                   showRecentsTab: true,
                                   recentsLimit: 28,
                                   replaceEmojiOnLimitExceed: false,
-                                  noRecents: const Text(
+                                  noRecents: Text(
                                     'No Recents',
                                     style: TextStyle(
                                         fontSize: 20, color: Colors.black26),
@@ -217,60 +220,70 @@ class ChatDetails extends StatelessWidget {
           ),
         );
       },
-      fallback: (context) => Center(
+      fallback: (context) => const Center(
         child: CircularProgressIndicator(),
       ),
     );
   }
 
-  Widget buildSenderMessage({required ChatModel message}) {
+  Widget buildSenderMessage({required ChatModel message, context}) {
     return Align(
       alignment: AlignmentDirectional.centerEnd,
       child: Container(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.symmetric(
+              horizontal: Adaptive.w(2.5), vertical: Adaptive.h(1)),
           decoration: BoxDecoration(
-            color: Colors.blue[300],
+            color: defaultColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              defaultText(text: message.text),
+              defaultText(
+                text: message.text,
+                textColor: Colors.white,
+              ),
               SizedBox(
-                height: Adaptive.h(.5),
+                height: Adaptive.h(.8),
               ),
               defaultText(
-                  text: message.dateTime.substring(12, 18) +
-                      message.dateTime.substring(21),
-                  textColor: Colors.grey[600],
-                  fontSize: 11,
+                  text:
+                     message.dateTime,
+                  myStyle: Theme.of(context)
+                      .textTheme
+                      .subtitle2!
+                      .copyWith(fontSize: 10, color: Colors.grey[400]),
                   textAlign: TextAlign.end)
             ],
           )),
     );
   }
 
-  Widget buildReceiverMessage({required ChatModel message}) {
+  Widget buildReceiverMessage({required ChatModel message, context}) {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: Container(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.symmetric(
+              horizontal: Adaptive.w(2.5), vertical: Adaptive.h(1)),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: HexColor('f1f1f1'),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              defaultText(text: message.text),
+              defaultText(text: message.text, textColor: Colors.black),
               SizedBox(
-                height: Adaptive.h(.5),
+                height: Adaptive.h(.8),
               ),
               defaultText(
-                  text: message.dateTime.substring(12, 18) +
-                      message.dateTime.substring(21),
-                  textColor: Colors.grey[600],
-                  fontSize: 11,
+                  // to take only time without date
+
+                  text: message.dateTime,
+                  myStyle: Theme.of(context)
+                      .textTheme
+                      .subtitle2!
+                      .copyWith(fontSize: 10, color: Colors.grey[500]),
                   textAlign: TextAlign.end)
             ],
           )),

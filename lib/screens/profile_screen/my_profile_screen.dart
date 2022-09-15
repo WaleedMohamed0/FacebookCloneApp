@@ -20,9 +20,9 @@ import '../../cubits/theme_manager/theme_cubit.dart';
 import '../posts_screen/create_new_post_screen.dart';
 
 class MyProfileScreen extends StatelessWidget {
-  bool fromMenu;
+  bool appBar;
 
-  MyProfileScreen({super.key, this.fromMenu = false});
+  MyProfileScreen({super.key, this.appBar = false});
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +34,9 @@ class MyProfileScreen extends StatelessWidget {
       listener: (context, state) {},
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: isDark ? HexColor('242527') : Colors.white,
-          appBar: fromMenu
+          appBar: appBar
               ? defaultAppBar(
-                  backgroundColor: isDark ? HexColor('242527') : Colors.white,
+
                   elevation: 0,
                   toolbarHeight: Adaptive.h(4.5))
               : null,
@@ -52,9 +51,12 @@ class MyProfileScreen extends StatelessWidget {
                     SizedBox(
                       height: Adaptive.h(1),
                     ),
-                    defaultText(
-                        text: currentUser.name!,
-                        myStyle: Theme.of(context).textTheme.headline2),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: Adaptive.w(2)),
+                      child: defaultText(
+                          text: currentUser.name!,
+                          myStyle: Theme.of(context).textTheme.headline2),
+                    ),
                     SizedBox(
                       height: Adaptive.h(2),
                     ),
@@ -99,7 +101,7 @@ class MyProfileScreen extends StatelessWidget {
                                 ),
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.home_outlined,
                                       size: 30,
                                     ),
@@ -144,18 +146,14 @@ class MyProfileScreen extends StatelessWidget {
                                         onTap: () {
                                           navigateToWithAnimation(
                                               context: context,
-                                              nextScreen: CreateNewPost(),
+                                              nextScreen: const CreateNewPost(),
                                               durationInMilliSecs: 500,
                                               pageTransitionType:
                                                   PageTransitionType
                                                       .bottomToTop);
                                         },
                                         decoration: InputDecoration(
-                                            hintStyle: TextStyle(
-                                                fontSize: 15,
-                                                color: isDark
-                                                    ? Colors.white
-                                                    : Colors.black87),
+                                            hintStyle: Theme.of(context).textTheme.headline5,
                                             hintText: 'What\'s on your mind?',
                                             border: InputBorder.none),
                                       ),
@@ -175,7 +173,7 @@ class MyProfileScreen extends StatelessWidget {
                                 Container(
                                   height: Adaptive.h(4),
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: Adaptive.w(3)),
+                                      horizontal: Adaptive.w(1)),
                                   child: ListView.separated(
                                       scrollDirection: Axis.horizontal,
                                       itemBuilder: (context, index) => InkWell(
@@ -277,7 +275,7 @@ class MyProfileScreen extends StatelessWidget {
                                         postsCubit,
                                         index,
                                         context,
-                                        userCubit.userLogged!,isDark);
+                                        userCubit.userLogged!);
                                   },
                                   separatorBuilder: (context, index) =>
                                       SizedBox(

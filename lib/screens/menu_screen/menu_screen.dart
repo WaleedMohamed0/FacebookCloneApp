@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:social_app/components/components.dart';
 import 'package:social_app/cubits/theme_manager/theme_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
@@ -37,44 +39,88 @@ class MenuScreen extends StatelessWidget {
                 SizedBox(
                   height: Adaptive.h(3),
                 ),
-                if (userCubit.userLogged != null)
-                  InkWell(
-                    onTap: () {
-                      navigateToWithAnimation(
-                          context: context,
-                          nextScreen: MyProfileScreen(fromMenu: true),
-                          pageTransitionType: PageTransitionType.rightToLeft);
-                    },
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            userCubit.userLogged!.profilePhoto!,
-                          ),
-                          radius: 25,
-                        ),
-                        SizedBox(
-                          width: Adaptive.w(3),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                userCubit.userLogged != null
+                    ? InkWell(
+                        onTap: () {
+                          navigateToWithAnimation(
+                              context: context,
+                              nextScreen: MyProfileScreen(appBar: true),
+                              pageTransitionType:
+                                  PageTransitionType.rightToLeft);
+                        },
+                        child: Row(
                           children: [
-                            defaultText(
-                                text: userCubit.userLogged!.name!,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
-                            SizedBox(
-                              height: Adaptive.h(.5),
+                            CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                userCubit.userLogged!.profilePhoto!,
+                              ),
+                              radius: 25,
                             ),
-                            defaultText(
-                                text: 'See your profile',
-                                fontSize: 15,
-                                textColor: Colors.grey),
+                            SizedBox(
+                              width: Adaptive.w(3),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: Adaptive.w(73),
+                                  child: defaultText(
+                                      text: userCubit.userLogged!.name!,
+                                      myStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1!
+                                          .copyWith(
+                                              fontSize: 20,
+                                              )),
+                                ),
+                                SizedBox(
+                                  height: Adaptive.h(.5),
+                                ),
+                                defaultText(
+                                    text: 'See your profile',
+                                    fontSize: 15,
+                                    textColor: Colors.grey),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
+                      )
+                    : Shimmer.fromColors(
+                        baseColor: Colors.black,
+                        highlightColor: Colors.grey,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 25,
+                            ),
+                            SizedBox(
+                              width: Adaptive.w(3),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: Adaptive.h(2.6),
+                                  width: Adaptive.w(40),
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(20)),
+                                ),
+                                SizedBox(
+                                  height: Adaptive.h(1),
+                                ),
+                                Container(
+                                  height: Adaptive.h(2),
+                                  width: Adaptive.w(20),
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(20)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                 SizedBox(
                   height: Adaptive.h(1),
                 ),
@@ -104,11 +150,11 @@ class MenuScreen extends StatelessWidget {
     return Container(
         height: Adaptive.h(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(23),
           boxShadow: const [
             BoxShadow(
-                color: Colors.blueAccent, offset: Offset(3, 3), blurRadius: 6)
+                color: Colors.blueAccent, offset: Offset(3, 3), blurRadius: 8)
           ],
         ),
         child: Padding(
@@ -140,14 +186,12 @@ class MenuScreen extends StatelessWidget {
                   width: Adaptive.w(4),
                 ),
                 defaultText(
-                    text: model.text!, textColor: Colors.black, fontSize: 16),
-                Spacer(),
+                    text: model.text!,
+                    myStyle: Theme.of(context).textTheme.bodyText2),
+                const Spacer(),
                 if (!model.darkMode!)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 18,
-                    color: Colors.grey[800],
-                  ),
+                  Icon(Icons.arrow_forward_ios,
+                      size: 18, color: Theme.of(context).iconTheme.color),
                 if (model.darkMode!)
                   BlocConsumer<ThemeManagerCubit, ThemeManagerStates>(
                     listener: (context, state) {
