@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shimmer/shimmer.dart';
@@ -22,10 +21,8 @@ class MenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var userCubit = UserCubit.get(context);
     return Scaffold(
-      body: BlocConsumer<UserCubit, UserStates>(
-        listener: (context, state) {
-          // TODO: implement listener
-        },
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: BlocBuilder<UserCubit, UserStates>(
         builder: (context, state) {
           return Padding(
             padding: EdgeInsets.symmetric(
@@ -70,8 +67,8 @@ class MenuScreen extends StatelessWidget {
                                           .textTheme
                                           .bodyText1!
                                           .copyWith(
-                                              fontSize: 20,
-                                              )),
+                                            fontSize: 20,
+                                          )),
                                 ),
                                 SizedBox(
                                   height: Adaptive.h(.5),
@@ -90,7 +87,7 @@ class MenuScreen extends StatelessWidget {
                         highlightColor: Colors.grey,
                         child: Row(
                           children: [
-                            CircleAvatar(
+                            const CircleAvatar(
                               radius: 25,
                             ),
                             SizedBox(
@@ -161,9 +158,10 @@ class MenuScreen extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(
               Adaptive.w(5), Adaptive.h(1), Adaptive.w(4), Adaptive.h(1)),
           child: InkWell(
-            onTap: () {
-              if (model.darkMode!) return;
-              if (!model.signOut!) {
+            onTap: () async {
+              if (model.darkMode!) {
+                return;
+              } else if (!model.signOut!) {
                 navigateToWithAnimation(
                     context: context,
                     nextScreen: model.screen,

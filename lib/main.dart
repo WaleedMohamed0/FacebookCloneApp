@@ -1,3 +1,4 @@
+import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,11 +20,15 @@ void main() async {
   await Firebase.initializeApp();
   await CacheHelper.init();
   loggedUserID = CacheHelper.getData(key: 'token');
-  runApp(MyApp());
+  isDarkInCache = CacheHelper.getData(key: 'theme');
+  runApp(MyApp(isDarkInCache));
 }
 
 class MyApp extends StatelessWidget {
   Widget? screen;
+  bool isDarkInCache = false;
+
+  MyApp(this.isDarkInCache, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +51,11 @@ class MyApp extends StatelessWidget {
               create: (context) => ChatsCubit(),
             ),
             BlocProvider(
-              create: (context) => ThemeManagerCubit(),
+              create: (context) => ThemeManagerCubit()
+                ..changeTheme(isDarkInCache: isDarkInCache ?? false),
             ),
           ],
-          child: BlocConsumer<ThemeManagerCubit, ThemeManagerStates>(
-            listener: (context, state) {
-              // TODO: implement listener
-            },
+          child: BlocBuilder<ThemeManagerCubit, ThemeManagerStates>(
             builder: (context, state) {
               return MaterialApp(
                 theme: lightMode,
@@ -61,12 +64,52 @@ class MyApp extends StatelessWidget {
                     ? ThemeMode.dark
                     : ThemeMode.light,
                 debugShowCheckedModeBanner: false,
-                home: screen,
+                home: (AnimatedSplashScreen(
+                    splash: splash(),
+                    centered: true,
+                    splashIconSize: 900,
+                    nextScreen: screen!)),
               );
             },
           ),
         );
       },
     );
+  }
+
+  Widget splash() {
+    return Container(
+      color: HexColor('242527'),
+      width: double.infinity,
+      child: Column(
+        children: [
+          const Spacer(),
+          const Icon(
+            Icons.facebook_rounded,
+            size: 100,
+            color: Colors.white,
+          ),
+          const Spacer(),
+          Padding(
+            padding: EdgeInsets.only(bottom: Adaptive.h(2)),
+            child: RichText(
+              text: const TextSpan(text: "Developed by ",
+                  style:TextStyle(
+                    fontSize: 18
+                  ),children: [
+                TextSpan(
+                    text: "Waleed Mohamed",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 19
+                    )),
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    //Image.asset();
   }
 }

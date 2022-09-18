@@ -5,19 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:social_app/cubits/posts_cubit/posts_states.dart';
-import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/comment_model.dart';
 import 'package:social_app/models/like_model.dart';
+import 'package:social_app/models/notification_model.dart';
 import 'package:social_app/models/user_data.dart';
-import 'package:social_app/screens/profile_screen/my_profile_screen.dart';
 
-import '../../components/components.dart';
 import '../../components/constants.dart';
 import '../../models/post_model.dart';
-import '../../screens/comments_screen/comments_screen.dart';
 
 class PostsCubit extends Cubit<PostsStates> {
   PostsCubit() : super(PostsCubitInitialState());
@@ -69,7 +64,6 @@ class PostsCubit extends Cubit<PostsStates> {
         // to add random ID for Each Post
         .add(postModel!.toMap())
         .then((value) {
-      // gotAllPosts = false;
       emit(CreateNewPostSuccessState());
     }).catchError((error) {
       emit(CreateNewPostErrorState());
@@ -78,29 +72,27 @@ class PostsCubit extends Cubit<PostsStates> {
 
   List<PostModel> allPosts = [];
   bool gotAllPosts = false;
-  List<String> postsId = [];
+  List<String> postsIds = [];
   List<int> likes = [];
-  List<CommentModel> comments = [];
 
-  Future<void> getAllPosts() async {
+  void getAllPosts() async {
     emit(GetAllPostsLoadingState());
     allPosts.clear();
-    postsId.clear();
+    postsIds.clear();
     likes.clear();
     userLikedBefore = false;
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('posts')
         .orderBy("dateTime", descending: true)
         .get()
-        .then((value) {
+        .then((value) async {
       for (var element in value.docs) {
         allPosts.add(
           PostModel.fromJson(element.data()),
         );
-        postsId.add(element.id);
-        getLikes(element: element);
+        postsIds.add(element.id);
+        await getLikes(element: element);
       }
-
       getMyPosts();
     }).then((value) {
       gotAllPosts = true;
@@ -112,14 +104,15 @@ class PostsCubit extends Cubit<PostsStates> {
 
   List<PostModel> myPosts = [];
   bool gotMyPosts = false;
-
-  Future<void> getMyPosts() async {
+  List<int> myPostsIndexes = [];
+  void getMyPosts() {
     emit(GetMyPostsLoadingState());
     myPosts.clear();
 
-    for (var post in allPosts) {
-      if (post.uId == loggedUserID) {
-        myPosts.add(post);
+    for (var i = 0;i<allPosts.length ;i++) {
+      if (allPosts[i].uId == loggedUserID) {
+        myPosts.add(allPosts[i]);
+        myPostsIndexes.add(i);
       }
     }
     gotMyPosts = true;
@@ -136,7 +129,7 @@ class PostsCubit extends Cubit<PostsStates> {
       allPosts.removeAt(postIndex);
       myPosts.removeAt(postIndex);
       // to clear it if user searched before
-      if(searchPostsList.isNotEmpty) {
+      if (searchPostsList.isNotEmpty) {
         searchPostsList.removeAt(postIndex);
       }
       emit(RemovePostSuccessState());
@@ -191,7 +184,10 @@ class PostsCubit extends Cubit<PostsStates> {
   LikeModel? userLikedPost;
 
   void likePost(
-      {required String postId, required int index, UserModel? currentUser}) {
+      {required String postId,
+      required int index,
+      UserModel? currentUser,
+      required String postUid}) {
     FirebaseFirestore.instance
         .collection('posts')
         .doc(postId)
@@ -227,6 +223,12 @@ class PostsCubit extends Cubit<PostsStates> {
             .doc(loggedUserID)
             .set(userLikedPost!.toMap())
             .then((value) {
+          sendNotification(
+              postId: postId,
+              postUid: postUid,
+              name: currentUser.name!,
+              profilePhoto: currentUser.profilePhoto!,
+              type: 'like');
           incrementLikes(index: index);
         });
       }
@@ -247,14 +249,79 @@ class PostsCubit extends Cubit<PostsStates> {
     emit(UpdateLikePostsSuccessState());
   }
 
-  void getLikes({required QueryDocumentSnapshot element}) {
-    // to get all posts' likes
-    // print(element['text']);
-    element.reference.collection('likes').get().then((value) {
-      likes.add(value.docs.length);
-      // print(value.docs.length);
-      emit(GetPostsLikesSuccessState());
+  NotificationModel? notificationModel;
+
+  void sendNotification(
+      {required String postId,
+      required String postUid,
+      required String name,
+      required String profilePhoto,
+      required String type}) {
+    notificationModel = NotificationModel(
+        name: name, profilePhoto: profilePhoto, postId: postId, type: type);
+    if (postUid != loggedUserID) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(postUid)
+          .collection('notifications')
+          .add(notificationModel!.toMap());
+    }
+  }
+
+  List<NotificationModel> notificationsList = [];
+
+  void getNotifications() {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(loggedUserID)
+        .collection('notifications')
+        .snapshots()
+        .listen((element) {
+      notificationsList.clear();
+      for (var element in element.docs) {
+        notificationsList.add(NotificationModel.fromJson(element.data()));
+      }
     });
+  }
+  int postIndex = 0;
+  PostModel? notificationPostData;
+  void getNotificationPostData({required String postId})
+  {
+    postIndex = postsIds.indexWhere((element) => element == postId);
+    notificationPostData = allPosts[postIndex];
+  }
+
+  Future<void> getLikes({required QueryDocumentSnapshot element}) async {
+    // to get number of all posts' likes
+    await element.reference.collection('likes').get().then((value) {
+      if (value.docs.isEmpty) {
+        likes.add(0);
+      } else {
+        likes.add(value.docs.length);
+      }
+    }).then((value)
+    {
+    });
+    // await FirebaseFirestore.instance
+    //     .collection('posts')
+    //     .orderBy("dateTime", descending: true)
+    //     .get()
+    //     .then((value) async {
+    //   for (var element in value.docs) {
+    //     await element.reference.collection('likes').get().then((value) {
+    //       if (value.docs.isEmpty) {
+    //         likes.add(0);
+    //       } else {
+    //         likes.add(value.docs.length);
+    //       }
+    //       emit(GetPostsLikesSuccessState());
+    //     });
+    //   }
+    // }).then((value) {
+    //   print(likes);
+    // });
+
+    emit(GetPostsLikesSuccessState());
   }
 
   List<LikeModel> usersLikedData = [];
@@ -297,11 +364,9 @@ class PostsCubit extends Cubit<PostsStates> {
           userClickedPosts.add(PostModel.fromJson(element.data()));
         }
       }
-    }).then((value)
-    {
+    }).then((value) {
       emit(GetUserPostsClickedSuccessState());
     });
-
   }
 
   CommentModel? commentModel;
@@ -309,6 +374,7 @@ class PostsCubit extends Cubit<PostsStates> {
   void addNewComment(
       {required String postId,
       required String commentText,
+      required String postUid,
       required UserModel currentUser}) {
     emit(AddNewCommentLoadingState());
     commentModel = CommentModel(
@@ -324,26 +390,22 @@ class PostsCubit extends Cubit<PostsStates> {
         .add(commentModel!.toMap())
         .then((value) {
       comments.add(commentModel!);
+      if (postUid != loggedUserID) {
+        sendNotification(
+            postId: postId,
+            postUid: postUid,
+            name: currentUser.name!,
+            profilePhoto: currentUser.profilePhoto!,
+            type: 'comment');
+      }
       emit(AddNewCommentSuccessState());
     }).catchError((error) {
       emit(AddNewCommentErrorState());
     });
   }
 
-  // void getComments({required QueryDocumentSnapshot element}) {
-  //   // to get all posts' comments
-  //   element.reference.collection('comments').get().then((value) {
-  //     for (var element in value.docs) {
-  //       comments.add(CommentModel(
-  //           profilePhoto: element.data()['profilePhoto'],
-  //           name: element.data()['name'],
-  //           uId: element.data()['uId'],
-  //           commentText: element.data()['comment']));
-  //       print(element.id);
-  //     }
-  //     emit(GotCommentsSuccessState());
-  //   });
-  // }
+  List<CommentModel> comments = [];
+
 
   void getComments({required String postId}) {
     comments.clear();
@@ -367,7 +429,7 @@ class PostsCubit extends Cubit<PostsStates> {
     emit(SharePostLoadingState());
     sharePostModel = PostModel(
         text: post.text,
-        postImage: post.postImage ?? "",
+        postImage: post.postImage,
         name: currentUser.name!,
         uId: loggedUserID,
         profilePhoto: currentUser.profilePhoto!,

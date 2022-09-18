@@ -53,12 +53,15 @@ class ChatDetails extends StatelessWidget {
                   SizedBox(
                     width: Adaptive.w(3.5),
                   ),
-                  defaultText(
-                      text: model!.name!,
-                      myStyle: Theme.of(context)
-                          .textTheme
-                          .headline1!
-                          .copyWith(overflow: TextOverflow.ellipsis)),
+                  SizedBox(
+                    width: Adaptive.w(63.5),
+                    child: defaultText(
+                        text: model!.name!,
+                        myStyle: Theme.of(context)
+                            .textTheme
+                            .headline1!
+                            .copyWith(overflow: TextOverflow.ellipsis,fontSize: 20)),
+                  ),
                 ],
               ),
             ),
@@ -73,7 +76,7 @@ class ChatDetails extends StatelessWidget {
                           left: Adaptive.w(5.4),
                           right: Adaptive.w(5.4),
                           top: Adaptive.h(2.5),
-                          bottom: Adaptive.h(.5)),
+                          bottom: Adaptive.h(.6)),
                       child: Column(
                         children: [
                           if (chatsCubit.messages.isNotEmpty)
@@ -82,7 +85,7 @@ class ChatDetails extends StatelessWidget {
                                 padding: EdgeInsets.only(bottom: Adaptive.h(2)),
                                 child: ListView.separated(
                                     controller: scrollController,
-                                    physics: BouncingScrollPhysics(),
+                                    physics: const BouncingScrollPhysics(),
                                     itemBuilder: (context, index) {
                                       if (chatsCubit.messages[index].senderId ==
                                           loggedUserID) {
@@ -237,7 +240,7 @@ class ChatDetails extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               defaultText(
                 text: message.text,
@@ -270,7 +273,7 @@ class ChatDetails extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               defaultText(text: message.text, textColor: Colors.black),
               SizedBox(

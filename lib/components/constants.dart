@@ -7,6 +7,7 @@ import '../models/posts_additions.dart';
 const defaultColor = Colors.blue;
 const transparentColor = Colors.transparent;
 String loggedUserID = "";
+bool isDarkInCache = false;
 String defaultMaleProfilePhoto =
     'https://freepikpsd.com/file/2019/10/default-avatar-png-Transparent-Images.png';
 String defaultFemaleProfilePhoto =
@@ -31,7 +32,7 @@ List<MenuModel> menuList = [
   MenuModel(
       iconData: Icons.person,
       text: "Edit Your Profile",
-      screen: EditProfileScreen(),
+      screen: const EditProfileScreen(),
       ),
   MenuModel(
       iconData: Icons.dark_mode_outlined,

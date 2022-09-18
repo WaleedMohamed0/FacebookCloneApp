@@ -28,8 +28,8 @@ ThemeData darkMode = ThemeData(
       color: Colors.grey[400],
     ),
     // For Headers
-    headline1: TextStyle(
-      fontSize: 26.0,
+    headline1: const TextStyle(
+      fontSize: 25.0,
       fontWeight: FontWeight.bold,
       color: Colors.white,
     ),
@@ -79,7 +79,7 @@ ThemeData lightMode = ThemeData(
   textTheme: TextTheme(
     // For Headers
     headline1: const TextStyle(
-      fontSize: 26.0,
+      fontSize: 25.0,
       fontWeight: FontWeight.bold,
       color: Colors.black,
     ),

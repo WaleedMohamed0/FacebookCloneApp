@@ -18,12 +18,17 @@ class RegisterScreen extends StatelessWidget {
     var phoneController = TextEditingController();
     var nameController = TextEditingController();
     var ageController = TextEditingController();
-    var cubit = UserCubit.get(context);
+    var userCubit = UserCubit.get(context);
     var formKey = GlobalKey<FormState>();
     return BlocConsumer<UserCubit, UserStates>(
       listener: (context, state) {
         if (state is CreateUserSuccessState) {
           defaultToast(msg: "User Registered Successfully");
+          // to deselect gender and pass
+          userCubit.gender = "";
+          if (!userCubit.isPass) {
+            userCubit.changePasswordVisibility();
+          }
           navigateAndFinish(context, LoginScreen());
         } else if (state is RegisterErrorState) {
           defaultToast(
@@ -81,8 +86,14 @@ class RegisterScreen extends StatelessWidget {
                           textInput: TextInputType.emailAddress,
                           suffix: Icons.clear,
                           valid: (String? value) {
-                            if (value!.isEmpty) {
+                            bool emailValid = RegExp(
+                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@(gmail|hotmail|outlook)+\.com")
+                                .hasMatch(value!);
+
+                            if (value.isEmpty) {
                               return 'Enter Your Email Address';
+                            } else if (!emailValid) {
+                              return 'Enter a Valid Email';
                             }
                             return null;
                           },
@@ -114,21 +125,23 @@ class RegisterScreen extends StatelessWidget {
                         ),
                         defaultTextField(
                           hintText: 'Password',
-                          isPass: cubit.isPass,
+                          isPass: userCubit.isPass,
                           controller: passController,
                           prefixIcon: Icon(Icons.lock_outline),
                           valid: (String? value) {
                             if (value!.isEmpty) {
                               return 'Enter Your Password';
+                            } else if (value.length < 6) {
+                              return 'Password at least 6 characters';
                             }
                             return null;
                           },
                           textInput: TextInputType.visiblePassword,
-                          suffix: cubit.isPass
+                          suffix: userCubit.isPass
                               ? Icons.remove_red_eye
                               : Icons.visibility_off_outlined,
                           suffixPressed: () {
-                            cubit.changePasswordVisibility();
+                            userCubit.changePasswordVisibility();
                           },
                         ),
                         SizedBox(
@@ -144,9 +157,10 @@ class RegisterScreen extends StatelessWidget {
                                   children: [
                                     Radio(
                                         value: "Male",
-                                        groupValue: cubit.gender,
+                                        groupValue: userCubit.gender,
                                         onChanged: (value) {
-                                          cubit.changeGender(value.toString());
+                                          userCubit
+                                              .changeGender(value.toString());
                                         }),
                                     defaultText(
                                         text: 'Male', textColor: Colors.white)
@@ -156,9 +170,10 @@ class RegisterScreen extends StatelessWidget {
                                   children: [
                                     Radio(
                                         value: "Female",
-                                        groupValue: cubit.gender,
+                                        groupValue: userCubit.gender,
                                         onChanged: (value) {
-                                          cubit.changeGender(value.toString());
+                                          userCubit
+                                              .changeGender(value.toString());
                                         }),
                                     defaultText(
                                         text: 'Female', textColor: Colors.white)
@@ -198,14 +213,14 @@ class RegisterScreen extends StatelessWidget {
                               isUpperCase: true,
                               function: () {
                                 if (formKey.currentState!.validate() &&
-                                    cubit.gender.isNotEmpty) {
-                                  cubit.userRegister(
+                                    userCubit.gender.isNotEmpty) {
+                                  userCubit.userRegister(
                                       email: emailController.text,
                                       password: passController.text,
                                       phone: phoneController.text,
                                       name: nameController.text,
                                       age: ageController.text);
-                                } else if (cubit.gender.isEmpty) {
+                                } else if (userCubit.gender.isEmpty) {
                                   defaultToast(
                                       msg: 'Please Select Your Gender',
                                       backgroundColor: Colors.red);

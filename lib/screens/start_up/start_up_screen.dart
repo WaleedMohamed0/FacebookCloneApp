@@ -86,6 +86,7 @@ class _StartUpScreenState extends State<StartUpScreen>
                 SizedBox(
                   height: Adaptive.h(18),
                   child: AppBar(
+                    backgroundColor:Theme.of(context).scaffoldBackgroundColor,
                     title: defaultText(
                         text: "facebook",
                         textColor: Colors.blue,
@@ -139,7 +140,6 @@ class _StartUpScreenState extends State<StartUpScreen>
                         ),
                       ),
                     ],
-                    backgroundColor:Theme.of(context).scaffoldBackgroundColor,
                     bottom: TabBar(
                         indicator: UnderlineTabIndicator(
                             borderSide: const BorderSide(width: 3.0),

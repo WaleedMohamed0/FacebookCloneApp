@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'dart:io' as Io;
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/models/post_model.dart';
@@ -252,9 +253,9 @@ class UserCubit extends Cubit<UserStates> {
   void searchMessengerUsers({required String searchQuery}) {
     searchMessengerList.clear();
     emit(SearchMessengerUsersLoadingState());
-    for (var i = 0; i < users.length; i++) {
-      if (users[i].name!.toLowerCase().contains(searchQuery.toLowerCase())) {
-        searchMessengerList.add(users[i]);
+    for (var user in users) {
+      if (user.name!.toLowerCase().contains(searchQuery.toLowerCase())) {
+        searchMessengerList.add(user);
       }
     }
     if (searchMessengerList.isEmpty) {
@@ -263,4 +264,36 @@ class UserCubit extends Cubit<UserStates> {
       emit(SearchMessengerUsersSuccessState());
     }
   }
+
+  // delete all user data except notifications , likes and comments came from him
+
+  // Future<void> deleteAccount()async {
+  //   // to remove him from authentication so he couldn't be able again to log in
+  //  await FirebaseAuth.instance.currentUser!.delete();
+  //   // to delete user' data
+  //  await FirebaseFirestore.instance.collection('users').doc(loggedUserID).delete();
+  //  await FirebaseFirestore.instance.collection('posts').get().then((value)
+  //   {
+  //     for (var element in value.docs) {
+  //       if(element['uId'] == loggedUserID)
+  //         {
+  //           element.reference.delete();
+  //         }
+  //     }
+  //   });
+  //  await FirebaseFirestore.instance.collection('users').get().then((value)
+  //   {
+  //     for (var element in value.docs) {
+  //       element.reference.collection('chats').get().then((value)
+  //       {
+  //         for (var element in value.docs) {
+  //           if(element.id == loggedUserID)
+  //             {
+  //               element.reference.delete();
+  //             }
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 }

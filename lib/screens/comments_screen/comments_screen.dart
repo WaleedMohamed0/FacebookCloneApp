@@ -5,24 +5,23 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/components/components.dart';
-import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/comment_model.dart';
 
 import 'package:social_app/my_flutter_app_icons.dart';
-import 'package:social_app/screens/posts_screen/users_who_reacted_screen.dart';
+import 'package:social_app/screens/posts_screen/people_who_reacted_screen.dart';
 
 import '../../cubits/posts_cubit/posts_states.dart';
-import '../profile_screen/my_profile_screen.dart';
 import '../profile_screen/others_profile_screen.dart';
 
 class CommentsScreen extends StatelessWidget {
   String postId = "";
+  String postUid = "";
   int postIndex = 0;
 
-  CommentsScreen({required this.postId, required this.postIndex});
+  CommentsScreen({super.key, required this.postId, required this.postIndex,required this.postUid});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +59,7 @@ class CommentsScreen extends StatelessWidget {
                     onTap: () {
                       navigateToWithAnimation(
                           context: context,
-                          nextScreen: UsersWhoReactedScreen(),
+                          nextScreen: const PeopleWhoReactedScreen(),
                           pageTransitionType: PageTransitionType.rightToLeft);
                     },
                     child: Row(
@@ -71,19 +70,25 @@ class CommentsScreen extends StatelessWidget {
                             myStyle: Theme.of(context).textTheme.bodyText1),
                         if (postsCubit.usersLikedData.length > 1 &&
                             postsCubit.usersLikedData.length != 2)
-                          defaultText(
-                              text:
-                                  ' and ${postsCubit.usersLikedData.length - 1} others',
-                              myStyle: Theme.of(context).textTheme.bodyText1),
+                          SizedBox(
+                            width: Adaptive.w(23),
+                            child: defaultText(
+                                text:
+                                    ' and ${postsCubit.usersLikedData.length - 1} others',
+                                myStyle: Theme.of(context).textTheme.bodyText1),
+                          ),
                         if (postsCubit.usersLikedData.length == 2)
-                          defaultText(
-                              text:
-                                  ' and ${postsCubit.usersLikedData.length - 1} other',
-                              myStyle: Theme.of(context).textTheme.bodyText1),
+                          SizedBox(
+                            width: Adaptive.w(23),
+                            child: defaultText(
+                                text:
+                                    ' and ${postsCubit.usersLikedData.length - 1} other',
+                                myStyle: Theme.of(context).textTheme.bodyText1),
+                          ),
                         SizedBox(
                           width: Adaptive.w(1.5),
                         ),
-                        Icon(Icons.arrow_forward_ios)
+                        const Icon(Icons.arrow_forward_ios)
                       ],
                     ),
                   )
@@ -94,7 +99,7 @@ class CommentsScreen extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                     controller: scrollController,
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.symmetric(
                         horizontal: Adaptive.w(4), vertical: Adaptive.h(3)),
                     itemBuilder: (context, index) {
@@ -128,7 +133,7 @@ class CommentsScreen extends StatelessWidget {
                             color: isDark ? Colors.white : Colors.black,
                           ),
                           textInput: TextInputType.text,
-                          hintStyle: TextStyle(color: Colors.grey),
+                          hintStyle: const TextStyle(color: Colors.grey),
                           hintText: 'Write a comment...',
                           fillColor:
                               isDark ? HexColor('242527') : Colors.transparent,
@@ -151,17 +156,18 @@ class CommentsScreen extends StatelessWidget {
                             scrollController.animateTo(
                                 scrollController.position.maxScrollExtent +
                                     Adaptive.h(8),
-                                duration: Duration(milliseconds: 400),
+                                duration: const Duration(milliseconds: 400),
                                 curve: Curves.easeInOut);
                           }
 
                           postsCubit.addNewComment(
-                              postId: postsCubit.postsId[postIndex],
+                              postId: postsCubit.postsIds[postIndex],
                               commentText: commentController.text,
+                              postUid:postUid,
                               currentUser: userCubit.userLogged!);
                           commentController.clear();
                         },
-                        constraints: BoxConstraints(),
+                        constraints: const BoxConstraints(),
                         size: 26)
                   ],
                 ),

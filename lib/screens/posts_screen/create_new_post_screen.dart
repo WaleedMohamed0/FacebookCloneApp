@@ -23,9 +23,8 @@ class CreateNewPost extends StatelessWidget {
       listener: (context, state) {
         if (state is CreateNewPostSuccessState) {
           defaultToast(msg: "Post Added Successfully");
-          postsCubit.getAllPosts().then((value) {
-            Navigator.pop(context);
-          });
+          postsCubit.getAllPosts();
+          Navigator.pop(context);
         } else if (state is CreateNewPostErrorState) {
           defaultToast(
               msg: "Error In Uploading Your Post", backgroundColor: Colors.red);

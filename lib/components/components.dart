@@ -1,22 +1,17 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hexcolor/hexcolor.dart';
-import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
-import 'package:social_app/cubits/posts_cubit/posts_states.dart';
 import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
 import 'package:social_app/cubits/theme_manager/theme_states.dart';
-import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/user_data.dart';
 import 'package:social_app/my_flutter_app_icons.dart';
 import 'package:social_app/screens/comments_screen/comments_screen.dart';
 
 import '../models/post_model.dart';
-import '../screens/profile_screen/my_profile_screen.dart';
 import '../screens/profile_screen/others_profile_screen.dart';
 import 'constants.dart';
 
@@ -110,7 +105,7 @@ Widget defaultTextField(
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(25),
                 borderSide: BorderSide(
-                    color: Theme.of(context!).iconTheme.color!, width: 1),
+                    color: Theme.of(context).iconTheme.color!, width: 1),
               )),
       validator: valid);
 }
@@ -440,7 +435,7 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                             SizedBox(
                               width: Adaptive.w(1),
                             ),
-                            Icon(
+                            const Icon(
                               Icons.check_circle,
                               color: Colors.blue,
                               size: 20,
@@ -456,9 +451,9 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                                 text: time,
                                 myStyle: Theme.of(context).textTheme.subtitle2),
                             SizedBox(width: Adaptive.w(2),),
-                            CircleAvatar(radius: 3,),
+                            const CircleAvatar(radius: 3,),
                             SizedBox(width: Adaptive.w(1),),
-                            Icon(Icons.public,size: 18,),
+                            const Icon(Icons.public,size: 18,),
                           ],
                         ),
                       ],
@@ -479,7 +474,7 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                                 acceptText: 'Remove',
                                 acceptFn: () {
                                   postsCubit.removePost(
-                                      postId: postsCubit.postsId[postIndex],
+                                      postId: postsCubit.postsIds[postIndex],
                                       postIndex: postIndex);
                                   Navigator.of(context, rootNavigator: true)
                                       .pop(context);
@@ -549,13 +544,14 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                       child: InkWell(
                         onTap: () {
                           postsCubit.likePost(
-                              postId: postsCubit.postsId[postIndex],
+                              postId: postsCubit.postsIds[postIndex],
+                              postUid : post.uId,
                               index: postIndex,
                               currentUser: currentUser);
                         },
                         child: Row(
                           children: [
-                            Icon(myIcons.like),
+                            const Icon(myIcons.like),
                             SizedBox(
                               width: Adaptive.w(2.3),
                             ),
@@ -570,23 +566,24 @@ Widget buildPost(PostModel post, PostsCubit postsCubit, postIndex, context,
                         child: InkWell(
                       onTap: () {
                         postsCubit.getComments(
-                            postId: postsCubit.postsId[postIndex]);
+                            postId: postsCubit.postsIds[postIndex]);
                         postsCubit.getLikedUsers(
-                            postId: postsCubit.postsId[postIndex],
+                            postId: postsCubit.postsIds[postIndex],
                             context: context,
                             index: postIndex);
                         navigateToWithAnimation(
                             context: context,
                             nextScreen: CommentsScreen(
-                              postId: postsCubit.postsId[postIndex],
+                              postId: postsCubit.postsIds[postIndex],
                               postIndex: postIndex,
+                              postUid:post.uId,
                             ),
                             durationInMilliSecs: 300,
                             pageTransitionType: PageTransitionType.rightToLeft);
                       },
                       child: Row(
                         children: [
-                          Icon(Icons.chat_bubble_outline),
+                          const Icon(Icons.chat_bubble_outline),
                           SizedBox(
                             width: Adaptive.w(1),
                           ),
@@ -682,34 +679,95 @@ Widget profileData({required UserModel currentUser}) {
 }
 
 String getTimeDifference({required String dateTime}) {
+  String time = "";
   if (DateTime.now().difference(DateTime.parse(dateTime)).inSeconds == 0) {
-    return 'Just now';
+    time = 'Just now';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes < 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inSeconds > 0) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inSeconds}s';
+    time = '${DateTime.now().difference(DateTime.parse(dateTime)).inSeconds}s';
   }
-  if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes >= 1 &&
-      DateTime.now().difference(DateTime.parse(dateTime)).inHours < 1) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inMinutes}m';
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inMinutes >= 1) {
+    time = '${DateTime.now().difference(DateTime.parse(dateTime)).inMinutes}m';
   }
-  if (DateTime.now().difference(DateTime.parse(dateTime)).inHours >= 1 &&
-      DateTime.now().difference(DateTime.parse(dateTime)).inDays < 1) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inHours}h';
+  if (DateTime.now().difference(DateTime.parse(dateTime)).inHours >= 1) {
+    time = '${DateTime.now().difference(DateTime.parse(dateTime)).inHours}h';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1) {
-    return '${DateTime.now().difference(DateTime.parse(dateTime)).inDays}d';
+    time = '${DateTime.now().difference(DateTime.parse(dateTime)).inDays}d';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inDays % 7 == 0) {
-    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 7).floor()}w';
+    time = '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 7).floor()}w';
   }
   if (DateTime.now().difference(DateTime.parse(dateTime)).inDays >= 1 &&
       DateTime.now().difference(DateTime.parse(dateTime)).inDays % 30 == 0) {
-    return '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 30).floor()}m';
+    time = '${(DateTime.now().difference(DateTime.parse(dateTime)).inDays / 30).floor()}m';
   }
-  return '';
+  return time;
 }
+
+Widget buildPostContainerShimmer({double width=20})=>Container(
+  width: Adaptive.w(width),
+  height: Adaptive.h(1),
+  decoration: BoxDecoration(
+    color: Colors.grey,
+    borderRadius:
+    BorderRadius.circular(25),
+  ),
+);
+
+Widget buildPostShimmer()
+{return Padding(
+  padding: EdgeInsets.only(bottom: Adaptive.h(1.5)),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: Adaptive.w(2),
+        ),
+        child: Row(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+          children: [
+            const CircleAvatar(
+              radius: 25,
+            ),
+            SizedBox(
+              width: Adaptive.w(3),
+            ),
+            Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+               buildPostContainerShimmer(width: 24),
+                SizedBox(
+                  height: Adaptive.h(.6),
+                ),
+                buildPostContainerShimmer(width: 13),
+              ],
+            ),
+          ],
+        ),
+      ),
+      SizedBox(
+        height: Adaptive.h(8),
+      ),
+      Row(
+        mainAxisAlignment:
+        MainAxisAlignment.spaceEvenly,
+        children: [
+          buildPostContainerShimmer(),
+          buildPostContainerShimmer(),
+          buildPostContainerShimmer(),
+        ],
+      )
+    ],
+  ),
+);}
+
+
 // EmojiPicker emojiSelect({required textEditingController}) {
 //
 //   return EmojiPicker(

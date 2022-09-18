@@ -86,15 +86,17 @@ class MessengerScreen extends StatelessWidget {
               ),
             ],
           ),
-          body: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: Adaptive.w(4), vertical: Adaptive.h(2.3)),
-            child: SingleChildScrollView(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: Adaptive.w(4), vertical: Adaptive.h(2.3)),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: Adaptive.w(2.3)),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: Adaptive.w(2.3)),
                     child: Row(
                       children: [
                         Expanded(
@@ -103,7 +105,8 @@ class MessengerScreen extends StatelessWidget {
                                 userCubit.searchMessengerUsers(
                                     searchQuery: searchQuery);
                               },
-                              isDark: isDark,context: context),
+                              isDark: isDark,
+                              context: context),
                         )
                       ],
                     ),
@@ -123,18 +126,19 @@ class MessengerScreen extends StatelessWidget {
                               userCubit.users.length,
                           builder: (context) {
                             return ListView.separated(
-                              physics: const NeverScrollableScrollPhysics(),
+                              physics: BouncingScrollPhysics(),
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return buildChatItem(
                                     userCubit.searchMessengerList.isEmpty
                                         ? userCubit.users[index]
-                                        : userCubit.searchMessengerList[index],
+                                        : userCubit
+                                            .searchMessengerList[index],
                                     context,
                                     chatsCubit.lastMessages[index]);
                               },
                               separatorBuilder: (context, index) => SizedBox(
-                                height: Adaptive.h(2),
+                                height: Adaptive.h(3),
                               ),
                               itemCount: userCubit.searchMessengerList.isEmpty
                                   ? userCubit.users.length

@@ -89,11 +89,12 @@ class ChatsCubit extends Cubit<ChatsStates> {
   List<ChatModel> lastMessages = [];
   bool gotLastMessages = false;
 
-  void getLastMessages(context) {
+  void getLastMessages(context) async {
     emit(GetLastMessagesLoadingState());
     lastMessages.clear();
+    UserCubit.get(context).searchMessengerList.clear();
     for (var user in UserCubit.get(context).users) {
-      FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('users')
           .doc(loggedUserID)
           .collection('chats')
@@ -108,7 +109,8 @@ class ChatsCubit extends Cubit<ChatsStates> {
               senderId: value.docs.last['senderId'],
               text: value.docs.last['text'],
               dateTime:
-                  "${value.docs.last['dateTime'].toString().substring(12, value.docs.last['dateTime'][14] == ":" ? 17 : 18)} ${value.docs.last['dateTime'].toString().substring(21)}"));
+                  "${value.docs.last['dateTime'].toString().substring(12, value.docs.last['dateTime'][14] == ":" ? 17 : 18)}"
+                  " ${value.docs.last['dateTime'].toString().substring(21)}"));
         }
         // to fill list length with users length to avoid errors
         else {
