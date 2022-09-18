@@ -1,4 +1,4 @@
-import 'package:conditional_builder/conditional_builder.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -8,11 +8,9 @@ import 'package:social_app/components/components.dart';
 import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/chats_cubit/chats_cubit.dart';
 import 'package:social_app/cubits/chats_cubit/chats_states.dart';
-import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
 import 'package:social_app/models/chat_model.dart';
-import 'package:social_app/models/post_model.dart';
 import 'package:social_app/models/user_data.dart';
 import 'package:social_app/screens/chats/chat_details.dart';
 

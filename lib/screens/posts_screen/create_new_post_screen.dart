@@ -24,6 +24,7 @@ class CreateNewPost extends StatelessWidget {
         if (state is CreateNewPostSuccessState) {
           defaultToast(msg: "Post Added Successfully");
           postsCubit.getAllPosts();
+          postsCubit.postImagePath=null;
           Navigator.pop(context);
         } else if (state is CreateNewPostErrorState) {
           defaultToast(

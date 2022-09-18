@@ -19,7 +19,7 @@ class ChatsCubit extends Cubit<ChatsStates> {
     emit(SendMessageLoadingState());
     chatModel = ChatModel(
       receiverId: receiverId,
-      senderId: loggedUserID,
+      senderId: loggedUserID!,
       text: text,
       dateTime: DateFormat('yyyy-MM-dd – h:mm:ss a')
           .format(DateTime.now())

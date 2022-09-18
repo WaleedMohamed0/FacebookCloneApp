@@ -56,7 +56,7 @@ class PostsCubit extends Cubit<PostsStates> {
         text: text,
         postImage: postImage ?? "",
         name: currentUser.name!,
-        uId: loggedUserID,
+        uId: loggedUserID!,
         profilePhoto: currentUser.profilePhoto!,
         dateTime: DateTime.now().toIso8601String());
     FirebaseFirestore.instance
@@ -196,7 +196,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .then((value) {
       for (var i = 0; i < value.size; i++) {
         // dislike a post
-        if (value.docs[i].id.contains(loggedUserID)) {
+        if (value.docs[i].id.contains(loggedUserID!)) {
           FirebaseFirestore.instance
               .collection('posts')
               .doc(postId)
@@ -381,7 +381,7 @@ class PostsCubit extends Cubit<PostsStates> {
         profilePhoto: currentUser.profilePhoto!,
         name: currentUser.name!,
         commentText: commentText,
-        uId: loggedUserID,
+        uId: loggedUserID!,
         dateTime: DateTime.now().toIso8601String());
     FirebaseFirestore.instance
         .collection('posts')
@@ -431,7 +431,7 @@ class PostsCubit extends Cubit<PostsStates> {
         text: post.text,
         postImage: post.postImage,
         name: currentUser.name!,
-        uId: loggedUserID,
+        uId: loggedUserID!,
         profilePhoto: currentUser.profilePhoto!,
         dateTime: DateTime.now().toIso8601String());
     FirebaseFirestore.instance

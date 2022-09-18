@@ -1,9 +1,8 @@
 import 'dart:io';
 
-import 'package:conditional_builder/conditional_builder.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hexcolor/hexcolor.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -12,9 +11,6 @@ import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/posts_cubit/posts_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
-import 'package:social_app/models/user_data.dart';
-import 'package:social_app/screens/profile_screen/edit_profile_screen.dart';
-
 import '../../components/components.dart';
 import '../../cubits/theme_manager/theme_cubit.dart';
 import '../posts_screen/create_new_post_screen.dart';

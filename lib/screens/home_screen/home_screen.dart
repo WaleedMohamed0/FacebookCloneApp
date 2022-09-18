@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:conditional_builder/conditional_builder.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hexcolor/hexcolor.dart';
-import 'package:intl/intl.dart';
+
 import 'package:page_transition/page_transition.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shimmer/shimmer.dart';
@@ -11,11 +9,9 @@ import 'package:social_app/components/components.dart';
 import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/theme_manager/theme_cubit.dart';
-import 'package:social_app/cubits/theme_manager/theme_states.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
-import 'package:social_app/models/post_model.dart';
-import 'package:social_app/my_flutter_app_icons.dart';
+
 import 'package:social_app/screens/posts_screen/create_new_post_screen.dart';
 
 import '../../cubits/posts_cubit/posts_states.dart';
@@ -135,7 +131,6 @@ class HomeScreen extends StatelessWidget {
                                 icon: const Icon(Icons.image,
                                     color: Colors.green, size: 28),
                                 onPressed: () {
-                                  postsCubit.getPostImage();
                                   navigateToWithAnimation(
                                       context: context,
                                       nextScreen: const CreateNewPost(),

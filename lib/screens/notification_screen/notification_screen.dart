@@ -1,4 +1,3 @@
-import 'package:conditional_builder/conditional_builder.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +6,6 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/posts_cubit/posts_states.dart';
 import 'package:social_app/models/notification_model.dart';
-import 'package:social_app/models/post_model.dart';
 import 'package:social_app/my_flutter_app_icons.dart';
 import 'package:social_app/screens/notification_screen/notification_post_screen.dart';
 

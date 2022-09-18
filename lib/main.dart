@@ -14,7 +14,7 @@ import 'package:social_app/network/cache_helper.dart';
 import 'package:social_app/screens/login/login_screen.dart';
 import 'package:social_app/screens/start_up/start_up_screen.dart';
 import 'package:social_app/styles/theme_data.dart';
-
+// @dart=2.9
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
