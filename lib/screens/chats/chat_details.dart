@@ -59,7 +59,8 @@ class ChatDetails extends StatelessWidget {
                         myStyle: Theme.of(context)
                             .textTheme
                             .headline1!
-                            .copyWith(overflow: TextOverflow.ellipsis,fontSize: 20)),
+                            .copyWith(
+                                overflow: TextOverflow.ellipsis, fontSize: 20)),
                   ),
                 ],
               ),
@@ -67,8 +68,7 @@ class ChatDetails extends StatelessWidget {
             body: Builder(
               builder: (context) {
                 chatsCubit.getMessages(receiverId: model!.uId!);
-                return BlocConsumer<ChatsCubit, ChatsStates>(
-                  listener: (context, state) {},
+                return BlocBuilder<ChatsCubit, ChatsStates>(
                   builder: (context, state) {
                     return Padding(
                       padding: EdgeInsets.only(
@@ -116,6 +116,43 @@ class ChatDetails extends StatelessWidget {
                                     borderColor: Colors.grey[100]!,
                                     fillColor: Colors.grey[100]!,
                                     hintText: "Message",
+                                    isSuffixIcon:
+                                        chatsCubit.chatImagePath != null
+                                            ? false
+                                            : true,
+                                    suffixIcon: Icons.image,
+                                    suffixWidget: chatsCubit.chatImagePath !=
+                                            null
+                                        ? Stack(
+                                            alignment:
+                                                AlignmentDirectional.topEnd,
+                                            children: [
+                                              Container(
+                                                height: Adaptive.h(7),
+                                                width: Adaptive.w(15),
+                                                padding: EdgeInsets.only(
+                                                    right: Adaptive.w(3)),
+                                                decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                        image: FileImage(chatsCubit
+                                                            .chatImagePath!))),
+                                              ),
+                                              CircleAvatar(
+                                                  radius: 13,
+                                                  child: defaultIconButton(
+                                                      icon: Icons.close,
+                                                      color: Colors.white,
+                                                      size: 16,
+                                                      onPressed: () {
+                                                        chatsCubit
+                                                            .removeChatImage();
+                                                      }))
+                                            ],
+                                          )
+                                        : null,
+                                    suffixPressed: () {
+                                      chatsCubit.getPostImage();
+                                    },
                                     onTap: () {
                                       // close emojis if keyboard is on
                                       if (!chatsCubit.emojiShow) {
@@ -147,7 +184,8 @@ class ChatDetails extends StatelessWidget {
                               defaultIconButton(
                                 icon: Icons.send_sharp,
                                 onPressed: () {
-                                  if (messageController.text != "") {
+                                  if (messageController.text != "" ||
+                                      chatsCubit.chatImagePath != null) {
                                     // get to the end of screen when there's a new message
                                     // maxScrollExtent to detect if screen is scrollable
                                     if (scrollController.hasClients &&
@@ -161,9 +199,16 @@ class ChatDetails extends StatelessWidget {
                                           duration: Duration(milliseconds: 400),
                                           curve: Curves.easeInOut);
                                     }
-                                    chatsCubit.sendMessage(
-                                        text: messageController.text,
-                                        receiverId: model!.uId!);
+                                    if (messageController.text != "" &&
+                                        chatsCubit.chatImagePath == null)
+                                      chatsCubit.sendMessage(
+                                          text: messageController.text,
+                                          receiverId: model!.uId!);
+                                    else {
+                                      chatsCubit.uploadChatImage(
+                                          text: messageController.text,
+                                          receiverId: model!.uId!);
+                                    }
                                     messageController.clear();
                                   }
                                 },
@@ -246,11 +291,19 @@ class ChatDetails extends StatelessWidget {
                 textColor: Colors.white,
               ),
               SizedBox(
-                height: Adaptive.h(.8),
+                height: Adaptive.h(.9),
               ),
+              if (message.chatImage != "")
+                Image.network(
+                  message.chatImage,
+                  width: Adaptive.w(40),
+                ),
+              if (message.chatImage != "")
+                SizedBox(
+                  height: Adaptive.h(1),
+                ),
               defaultText(
-                  text:
-                     message.dateTime,
+                  text: message.dateTime,
                   myStyle: Theme.of(context)
                       .textTheme
                       .subtitle2!
@@ -278,9 +331,17 @@ class ChatDetails extends StatelessWidget {
               SizedBox(
                 height: Adaptive.h(.8),
               ),
+              if (message.chatImage != "")
+                Image.network(
+                  message.chatImage,
+                  width: Adaptive.w(40),
+                ),
+              if (message.chatImage != "")
+                SizedBox(
+                  height: Adaptive.h(1),
+                ),
               defaultText(
                   // to take only time without date
-
                   text: message.dateTime,
                   myStyle: Theme.of(context)
                       .textTheme

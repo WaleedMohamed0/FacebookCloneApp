@@ -41,7 +41,8 @@ Widget defaultTextField(
     TextStyle? hintStyle,
     Widget? prefixIcon,
     bool isPass = false,
-    IconData? suffix,
+    IconData? suffixIcon,
+    Widget? suffixWidget,
     TextEditingController? controller,
     required TextInputType textInput,
     Function()? suffixPressed,
@@ -56,7 +57,8 @@ Widget defaultTextField(
     Color borderColor = Colors.white,
     Function()? onTap,
     BuildContext? context,
-    bool isDark = false}) {
+      bool isSuffixIcon = true,
+    }) {
   return TextFormField(
       style: style,
       maxLines: maxLines,
@@ -85,13 +87,14 @@ Widget defaultTextField(
                 borderSide: BorderSide(color: borderColor, width: 10),
               ),
               prefixIcon: prefixIcon,
-              suffixIcon: IconButton(
+              suffixIcon: isSuffixIcon ? IconButton(
                 icon: Icon(
-                  suffix,
+                  suffixIcon,
                   color: defaultColor,
+                  size: 27,
                 ),
                 onPressed: suffixPressed,
-              ),
+              ):suffixWidget,
             )
           : InputDecoration(
               border: OutlineInputBorder(

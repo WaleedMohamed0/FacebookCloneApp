@@ -7,11 +7,9 @@ import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/posts_cubit/posts_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/cubits/user_cubit/user_states.dart';
-import 'package:social_app/screens/profile_screen/my_profile_screen.dart';
 
 import '../../components/components.dart';
-import '../../cubits/theme_manager/theme_cubit.dart';
-import '../../models/user_data.dart';
+
 
 class EditProfileScreen extends StatelessWidget {
   const EditProfileScreen({super.key});
@@ -28,7 +26,6 @@ class EditProfileScreen extends StatelessWidget {
             TextEditingController(text: currentUser.education),
         residenceController =
             TextEditingController(text: currentUser.residence);
-    bool isDark = ThemeManagerCubit.get(context).isDark;
 
     return BlocConsumer<UserCubit, UserStates>(
       listener: (context, state) {
@@ -51,19 +48,16 @@ class EditProfileScreen extends StatelessWidget {
               profileFields: true,
               style: Theme.of(context).textTheme.bodyText2!,
               context: context,
-              isDark: isDark,
               controller: nameController),
           defaultTextField(
               textInput: TextInputType.visiblePassword,
               style: Theme.of(context).textTheme.bodyText2!,
               context: context,
               profileFields: true,
-              isDark: isDark,
               controller: passwordController),
           defaultTextField(
               textInput: TextInputType.number,
               profileFields: true,
-              isDark: isDark,
               context: context,
               style: Theme.of(context).textTheme.bodyText2!,
               controller: phoneController),
@@ -72,20 +66,17 @@ class EditProfileScreen extends StatelessWidget {
               context: context,
               style: Theme.of(context).textTheme.bodyText2!,
               profileFields: true,
-              isDark: isDark,
               controller: ageController),
           defaultTextField(
               textInput: TextInputType.text,
               context: context,
               style: Theme.of(context).textTheme.bodyText2!,
               profileFields: true,
-              isDark: isDark,
               controller: educationController),
           defaultTextField(
               textInput: TextInputType.text,
               context: context,
               style: Theme.of(context).textTheme.bodyText2!,
-              isDark: isDark,
               profileFields: true,
               controller: residenceController),
         ];

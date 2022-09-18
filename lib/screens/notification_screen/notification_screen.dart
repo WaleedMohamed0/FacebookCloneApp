@@ -36,6 +36,7 @@ class NotificationsScreen extends StatelessWidget {
                         myStyle: Theme.of(context).textTheme.headline1),
                     ListView.separated(
                         shrinkWrap: true,
+                        physics: BouncingScrollPhysics(),
                         itemBuilder: (context, index) {
                           return buildNotification(
                               notification: postsCubit.notificationsList[index],
@@ -69,6 +70,7 @@ class NotificationsScreen extends StatelessWidget {
       required context,
       required int index,
       required PostsCubit postsCubit}) {
+    String time = getTimeDifference(dateTime: notification.dateTime);
     String notificationText = notification.type == "like"
         ? "liked your post"
         : "commented on your post";
@@ -118,24 +120,32 @@ class NotificationsScreen extends StatelessWidget {
           SizedBox(
             width: Adaptive.w(3),
           ),
-          SizedBox(
-            width: Adaptive.w(69),
-            child: RichText(
-              text: TextSpan(
-                  text: "${notification.name} ",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyText1!
-                      .copyWith(fontSize: 22),
-                  children: [
-                    TextSpan(
-                        text: notificationText,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyText2!
-                            .copyWith(fontSize: 20)),
-                  ]),
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: Adaptive.w(69),
+                child: RichText(
+                  text: TextSpan(
+                      text: "${notification.name} ",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText1!
+                          .copyWith(fontSize: 22),
+                      children: [
+                        TextSpan(
+                            text: notificationText,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyText2!
+                                .copyWith(fontSize: 20)),
+                      ]),
+                ),
+              ),
+              SizedBox(height: Adaptive.h(1),),
+              defaultText(text: time,myStyle: Theme.of(context).textTheme.subtitle2),
+
+            ],
           ),
         ],
       ),

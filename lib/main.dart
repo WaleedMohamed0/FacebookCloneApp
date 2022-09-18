@@ -21,7 +21,11 @@ void main() async {
   await CacheHelper.init();
   loggedUserID = CacheHelper.getData(key: 'token');
   isDarkInCache = CacheHelper.getData(key: 'theme');
-  runApp(MyApp(isDarkInCache));
+  if(isDarkInCache==null)
+    {
+      isDarkInCache = false;
+    }
+  runApp(MyApp(isDarkInCache!));
 }
 
 class MyApp extends StatelessWidget {

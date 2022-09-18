@@ -34,100 +34,103 @@ class LoginScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: HexColor('3b5999'),
             resizeToAvoidBottomInset: false,
-            body: Padding(
-              padding: const EdgeInsets.all(35.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  defaultText(
-                      text: "facebook",
-                      fontSize: 38,
-                      fontWeight: FontWeight.bold,
-                      textColor: Colors.white),
-                  SizedBox(
-                    height: Adaptive.h(4),
-                  ),
-                  defaultTextField(
-                    hintText: 'EmailAddress',
-                    hintStyle: TextStyle(fontSize: 15),
-                    controller: emailController,
-
-                    prefixIcon: Icon(Icons.email_outlined),
-                    textInput: TextInputType.emailAddress,
-                  ),
-                  SizedBox(
-                    height: Adaptive.h(4),
-                  ),
-                  defaultTextField(
-                      hintText: 'Password',
-                      isPass: userCubit.isPass,
-                      hintStyle: TextStyle(fontSize: 15),
-                      // style: TextStyle(
-                      //   color: Colors.black,fontSize: 15
-                      // ),
-                      controller: passController,
-                      prefixIcon: Icon(Icons.lock_outline),
-                      textInput: TextInputType.visiblePassword,
-                      suffix: userCubit.isPass
-                          ? Icons.remove_red_eye
-                          : Icons.visibility_off_outlined,
-                      suffixPressed: () {
-                        userCubit.changePasswordVisibility();
-                      }),
-                  SizedBox(
-                    height: Adaptive.h(4),
-                  ),
-                  ConditionalBuilder(
-                    condition: state is! LoginLoadingState,
-                    builder: (context) => defaultBtn(
-                      backgroundColor: HexColor('4f69a2'),
-                      txt: 'Login',
-                      isUpperCase: true,
-                      function: () {
-                        userCubit.userLogin(
-                            email: emailController.text,
-                            password: passController.text);
-                      },
-                      icon: Icons.login,
-                    ),
-                    fallback: (context) => Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 5,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: Adaptive.h(4),
-                  ),
-                  Row(
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: Adaptive.w(8)),
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       defaultText(
-                          text: 'Don\'t have an account? ',
-                          fontSize: 15,
+                          text: "facebook",
+                          fontSize: 38,
+                          fontWeight: FontWeight.bold,
                           textColor: Colors.white),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              PageTransition(
-                                  child: RegisterScreen(),
-                                  type: PageTransitionType.fade));
-                        },
-                        child: const Text(
-                          'REGISTER',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                      SizedBox(
+                        height: Adaptive.h(4),
+                      ),
+                      defaultTextField(
+                        hintText: 'EmailAddress',
+                        hintStyle: TextStyle(fontSize: 15),
+                        controller: emailController,
+
+                        prefixIcon: Icon(Icons.email_outlined),
+                        textInput: TextInputType.emailAddress,
+                      ),
+                      SizedBox(
+                        height: Adaptive.h(4),
+                      ),
+                      defaultTextField(
+                          hintText: 'Password',
+                          isPass: userCubit.isPass,
+                          hintStyle: TextStyle(fontSize: 15),
+                          controller: passController,
+                          prefixIcon: Icon(Icons.lock_outline),
+                          textInput: TextInputType.visiblePassword,
+                          suffixIcon: userCubit.isPass
+                              ? Icons.remove_red_eye
+                              : Icons.visibility_off_outlined,
+                          suffixPressed: () {
+                            userCubit.changePasswordVisibility();
+                          }),
+                      SizedBox(
+                        height: Adaptive.h(4),
+                      ),
+                      ConditionalBuilder(
+                        condition: state is! LoginLoadingState,
+                        builder: (context) => defaultBtn(
+                          backgroundColor: HexColor('4f69a2'),
+                          txt: 'Login',
+                          isUpperCase: true,
+                          function: () {
+                            userCubit.userLogin(
+                                email: emailController.text,
+                                password: passController.text);
+                          },
+                          icon: Icons.login,
+                        ),
+                        fallback: (context) => Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 5,
                           ),
                         ),
                       ),
+                      SizedBox(
+                        height: Adaptive.h(4),
+                      ),
+
                     ],
                   ),
-                ],
-              ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    defaultText(
+                        text: 'Don\'t have an account? ',
+                        fontSize: 15,
+                        textColor: Colors.white),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: RegisterScreen(),
+                                type: PageTransitionType.fade));
+                      },
+                      child: const Text(
+                        'REGISTER',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         );

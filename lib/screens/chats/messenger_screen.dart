@@ -26,10 +26,7 @@ class MessengerScreen extends StatelessWidget {
 
     bool isDark = ThemeManagerCubit.get(context).isDark;
 
-    return BlocConsumer<UserCubit, UserStates>(
-      listener: (context, state) {
-        // TODO: implement listener
-      },
+    return BlocBuilder<UserCubit, UserStates>(
       builder: (context, state) {
         return Scaffold(
           backgroundColor: Theme.of(context).backgroundColor,
@@ -114,10 +111,7 @@ class MessengerScreen extends StatelessWidget {
                   ),
                   if (userCubit.users.isNotEmpty &&
                       state is! SearchMessengerUsersErrorState)
-                    BlocConsumer<ChatsCubit, ChatsStates>(
-                      listener: (context, state) {
-                        // TODO: implement listener
-                      },
+                    BlocBuilder<ChatsCubit, ChatsStates>(
                       builder: (context, state) {
                         return ConditionalBuilder(
                           condition: chatsCubit.lastMessages.length ==

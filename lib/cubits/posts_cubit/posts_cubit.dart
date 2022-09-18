@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_app/cubits/posts_cubit/posts_states.dart';
+import 'package:social_app/cubits/user_cubit/user_cubit.dart';
 import 'package:social_app/models/comment_model.dart';
 import 'package:social_app/models/like_model.dart';
 import 'package:social_app/models/notification_model.dart';
@@ -105,11 +106,12 @@ class PostsCubit extends Cubit<PostsStates> {
   List<PostModel> myPosts = [];
   bool gotMyPosts = false;
   List<int> myPostsIndexes = [];
+
   void getMyPosts() {
     emit(GetMyPostsLoadingState());
     myPosts.clear();
 
-    for (var i = 0;i<allPosts.length ;i++) {
+    for (var i = 0; i < allPosts.length; i++) {
       if (allPosts[i].uId == loggedUserID) {
         myPosts.add(allPosts[i]);
         myPostsIndexes.add(i);
@@ -204,6 +206,7 @@ class PostsCubit extends Cubit<PostsStates> {
               .doc(loggedUserID)
               .delete()
               .then((value) {
+            removeNotification(postUid: postUid);
             decrementLikes(index: index);
           });
           userLikedBefore = true;
@@ -258,7 +261,13 @@ class PostsCubit extends Cubit<PostsStates> {
       required String profilePhoto,
       required String type}) {
     notificationModel = NotificationModel(
-        name: name, profilePhoto: profilePhoto, postId: postId, type: type);
+        name: name,
+        profilePhoto: profilePhoto,
+        postId: postId,
+        type: type,
+        uId: loggedUserID!,
+        dateTime: DateTime.now().toIso8601String());
+    // to not send notification to myself
     if (postUid != loggedUserID) {
       FirebaseFirestore.instance
           .collection('users')
@@ -275,6 +284,7 @@ class PostsCubit extends Cubit<PostsStates> {
         .collection('users')
         .doc(loggedUserID)
         .collection('notifications')
+        .orderBy('dateTime', descending: true)
         .snapshots()
         .listen((element) {
       notificationsList.clear();
@@ -283,10 +293,28 @@ class PostsCubit extends Cubit<PostsStates> {
       }
     });
   }
+
+  void removeNotification({required String postUid}) {
+    if (postUid != loggedUserID) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(postUid)
+          .collection('notifications')
+          .get()
+          .then((value) {
+        for (var element in value.docs) {
+          if (element['uId'] == loggedUserID) {
+            element.reference.delete();
+          }
+        }
+      });
+    }
+  }
+
   int postIndex = 0;
   PostModel? notificationPostData;
-  void getNotificationPostData({required String postId})
-  {
+
+  void getNotificationPostData({required String postId}) {
     postIndex = postsIds.indexWhere((element) => element == postId);
     notificationPostData = allPosts[postIndex];
   }
@@ -299,9 +327,7 @@ class PostsCubit extends Cubit<PostsStates> {
       } else {
         likes.add(value.docs.length);
       }
-    }).then((value)
-    {
-    });
+    }).then((value) {});
     // await FirebaseFirestore.instance
     //     .collection('posts')
     //     .orderBy("dateTime", descending: true)
@@ -405,7 +431,6 @@ class PostsCubit extends Cubit<PostsStates> {
   }
 
   List<CommentModel> comments = [];
-
 
   void getComments({required String postId}) {
     comments.clear();

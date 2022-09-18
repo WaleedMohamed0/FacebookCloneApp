@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:social_app/components/constants.dart';
 import 'package:social_app/cubits/chats_cubit/chats_states.dart';
@@ -13,14 +16,51 @@ class ChatsCubit extends Cubit<ChatsStates> {
 
   static ChatsCubit get(context) => BlocProvider.of(context);
 
+  final ImagePicker chatImagePicker = ImagePicker();
+  File? chatImagePath;
+
+  void getPostImage() {
+    emit(GotChatImagePathLoadingState());
+    chatImagePicker
+        .pickImage(
+      source: ImageSource.gallery,
+    )
+        .then((value) {
+      chatImagePath = File(value!.path);
+      emit(GotChatImagePathSuccessState());
+    });
+  }
+
+  void uploadChatImage({required String text, required String receiverId}) {
+    FirebaseStorage.instance
+        .ref()
+        .child('chats/${Uri.file(chatImagePath!.path).pathSegments.last}')
+        .putFile(chatImagePath!)
+        .then((value) {
+      value.ref.getDownloadURL().then((value) {
+        sendMessage(
+            text: text, chatImage: value.toString(), receiverId: receiverId);
+      }).then((value) {
+        removeChatImage();
+      }).catchError((error) {});
+    }).catchError((error) {});
+  }
+
+  void removeChatImage() {
+    chatImagePath = null;
+    emit(RemoveChatImageSuccessState());
+  }
+
   ChatModel? chatModel;
 
-  void sendMessage({required String text, required String receiverId}) {
+  void sendMessage(
+      {required String text, required String receiverId, String? chatImage}) {
     emit(SendMessageLoadingState());
     chatModel = ChatModel(
       receiverId: receiverId,
       senderId: loggedUserID!,
       text: text,
+      chatImage: chatImage ?? "",
       dateTime: DateFormat('yyyy-MM-dd – h:mm:ss a')
           .format(DateTime.now())
           .toString(),
@@ -73,6 +113,7 @@ class ChatsCubit extends Cubit<ChatsStates> {
           receiverId: receiverId,
           senderId: element['senderId'],
           text: element['text'],
+          chatImage: element['chatImage'],
           // to get time without date
           dateTime: element['dateTime']
                   .substring(13, element['dateTime'][14] == ":" ? 17 : 18) +
@@ -127,6 +168,6 @@ class ChatsCubit extends Cubit<ChatsStates> {
 
   void emojiSelect() {
     emojiShow = !emojiShow;
-    emit(EmojySelectState());
+    emit(EmojiSelectState());
   }
 }
